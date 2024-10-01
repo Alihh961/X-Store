@@ -15,7 +15,10 @@ app.use(express.urlencoded({ extended: true })); // to receive data using post m
 
 app.get('/' , (req,res)=>{
     res.send('Home Page')
-})
+});
+
+
+
 
 
 module.exports = app;
