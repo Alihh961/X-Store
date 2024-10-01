@@ -2,7 +2,7 @@
   "name": "x-store",
   "version": "1.0.0",
   "description": "X-Store is an online platform where users can explore a wide variety of games, access detailed information about each game, and make purchases. After purchasing a game, users can leave a review or comment within 7 days, which will be visible to other potential buyers. The platform aims to create a community-driven experience where reviews help guide new customers in making informed choices.",
-  "main": "index.js",
+  "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
