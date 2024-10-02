@@ -1,6 +1,7 @@
 const userModel = require("../../model/user");
+const validator = require("validator");
 
-const addUser = async function (req, res, next) {
+const addUser = async function (req, res) {
   const userModel = require("../../model/user");
 
   const name = req.body.name;
@@ -41,10 +42,10 @@ const addUser = async function (req, res, next) {
   }
 };
 
-const deleteUserById = async function (req, res, next) {
+const deleteUserById = async function (req, res) {
   const userId = req.params.id;
 
-  if (!userId.match(/^[0-9a-fA-F]{24}$/)) {
+  if (!userId.match(/^[0-9a-fA-F]{24}$/) || !userId) {
     return res.status(400).json({
       message: "ID is not a valid MongoDB _id, Please Check ID",
       status: "fail",
@@ -77,4 +78,81 @@ const deleteUserById = async function (req, res, next) {
   }
 };
 
-module.exports = { addUser, deleteUserById };
+const deleteUserByEmail = async function (req, res) {
+  const userEmail = req.params.email;
+
+  if (!validator.isEmail(userEmail) || !userEmail) {
+    res.status(400).json({
+      message: "Invalid Email Format",
+      status: "fail",
+    });
+  }
+
+  try {
+    const user = await userModel.findOneAndDelete({ email: userEmail });
+
+    if (!user) {
+      return res.status(404).json({
+        message: "No account associated to " + userEmail,
+        status: "fail",
+      });
+    }
+
+    return res.status(200).json({
+      message: "User deleted successfully",
+      status: "success",
+    });
+  } catch (error) {
+    console.error(error.message);
+
+    return res.status(500).json({
+      message: error.message,
+      status: "error",
+    });
+  }
+};
+
+const updateUserById = async function (req, res) {
+  const userId = req.params.id;
+  const email = req.body.email;
+
+  if (!userId.match(/^[0-9a-fA-F]{24}$/) || !userId) {
+    return res.status(400).json({
+      message: "ID is not a valid MongoDB _id, Please Check ID",
+      status: "fail",
+    });
+  }
+
+  if (!email) {
+    return res.status(400).json({
+      status: "fail",
+      message: "No provided data to update!",
+    });
+  }
+  if (!validator.isEmail(email)) {
+    return res.status("400").json({
+      status: "fail",
+      message: "Email format is not valid",
+    });
+  }
+
+  try {
+    const user = await userModel.findByIdAndUpdate(
+      userId,
+      { email },
+      { new: true }
+    );
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" , status :'fail' });
+    }
+
+    res.status(200).json({ message: "User updated successfully", user });
+  } catch (error) {
+    res
+      .status(400)
+      .json({ message: "Error updating user", error: error.message });
+  }
+};
+
+module.exports = { addUser, deleteUserById, deleteUserByEmail, updateUserById };
