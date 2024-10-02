@@ -2,6 +2,8 @@ const express = require('express');
 const path = require('path');
 const app = express();
 
+const userRouter = require('./api/router/userRouter');
+
 const publicPath = path.join(__dirname , './public');
 
 app.set('view engine' , 'ejs');
@@ -16,6 +18,13 @@ app.use(express.urlencoded({ extended: true })); // to receive data using post m
 app.get('/' , (req,res)=>{
     res.send('Home Page')
 });
+
+app.use('/api/user' , userRouter);
+
+
+app.get('*' , (req,res)=>{
+    res.send('No Page Found')
+})
 
 
 

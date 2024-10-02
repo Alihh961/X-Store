@@ -8,7 +8,7 @@ const cluster = process.env.CLUSTER_NAME;
 const dataBaseName = process.env.DB_NAME;
 
 
-const uri = `mongodb+srv://${username}:${password}@${cluster}.vau0p.mongodb.net//${dataBaseName}?retryWrites=true&w=majority&appName=${cluster}`;
+const uri = `mongodb+srv://${username}:${password}@${cluster}.vau0p.mongodb.net/${dataBaseName}?retryWrites=true&w=majority&appName=${cluster}`;
 
 
 async function connectToDB() {

@@ -7,12 +7,10 @@ const dotenv = require('dotenv').config();
 const port = process.env.PORT || 3000;
 const server = http.createServer(app);
 
-const connectToDB = require('./DBConnection');
+const connectToDB = require('./config/DBConnection');
 
 // Connection to database
 connectToDB();
-
-
 
 
 server.listen(port, () => {
