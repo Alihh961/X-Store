@@ -1,3 +1,5 @@
+const userModel = require("../../model/user");
+
 const addUser = async function (req, res, next) {
   const userModel = require("../../model/user");
 
@@ -16,12 +18,9 @@ const addUser = async function (req, res, next) {
   });
 
   try {
-    console.log(req);
-    console.log(name, email, password, confirmedPassword);
-
     await newUser.save();
     const message = "User created with success";
-    res.status(201).json({
+    return res.status(201).json({
       message,
       status: "success",
       data: {
@@ -33,15 +32,49 @@ const addUser = async function (req, res, next) {
       },
     });
   } catch (err) {
-
-    res.status(400).json({
-      error : {
-        message : err.message,
-
+    return res.status(400).json({
+      error: {
+        message: err.message,
       },
-      status : "fail"
+      status: "fail",
     });
   }
 };
 
-module.exports = { addUser };
+const deleteUserById = async function (req, res, next) {
+  const userId = req.params.id;
+
+  if (!userId.match(/^[0-9a-fA-F]{24}$/)) {
+    return res.status(400).json({
+      message: "ID is not a valid MongoDB _id, Please Check ID",
+      status: "fail",
+    });
+  }
+
+  try {
+    const user = await userModel.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({
+        message: "User not found",
+        status: "fail",
+      });
+    }
+
+    await userModel.findByIdAndDelete({ _id: userId });
+
+    return res.status(200).json({
+      message: "User deleted successfully",
+      status: "success",
+    });
+  } catch (error) {
+    console.error(error.message);
+
+    return res.status(500).json({
+      message: error.message,
+      status: "error",
+    });
+  }
+};
+
+module.exports = { addUser, deleteUserById };
