@@ -9,7 +9,7 @@ router.get('/:id' , userController.getUserById);
 
 router.delete('/:id' , userController.deleteUserById);
 
-// router.get('/email/:email' , userController.getUserById);
+router.get('/email/:email' , userController.getUserByEmail);
 
 router.delete('/email/:email' , userController.deleteUserByEmail);
 

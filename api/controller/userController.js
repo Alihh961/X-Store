@@ -71,8 +71,10 @@ const getUserById = async function (req, res) {
     });
 
   } catch (error) {
-    console.log(error)
-    return res.status(500).json(error);
+    return res.status(500).json({
+      status : 'error',
+      message : error.message
+    });
   }
 };
 
@@ -112,6 +114,39 @@ const deleteUserById = async function (req, res) {
   }
 };
 
+const getUserByEmail = async function(req,res){
+    const userEmail = req.params.email;
+    if (!validator.isEmail(userEmail) || !userEmail) {
+      res.status(400).json({
+        message: "Invalid Email Format",
+        status: "fail",
+      });
+    }
+
+    try{
+      const user = await userModel.findOne({email : userEmail});
+      if (!user) {
+        return res.status(404).json({
+          message: "No account associated to " + userEmail,
+          status: "fail",
+        });
+      }
+  
+      return res.status(200).json({
+        data : {
+          user
+        },
+        status: "success",
+      });
+    }
+    catch(error){
+      return res.status(500).json({
+        status : 'error',
+        message : error.message
+      })
+    }
+
+}
 const deleteUserByEmail = async function (req, res) {
   const userEmail = req.params.email;
 
@@ -191,4 +226,4 @@ const updateUserById = async function (req, res) {
   }
 };
 
-module.exports = { addUser, deleteUserById, deleteUserByEmail, updateUserById , getUserById };
+module.exports = { addUser, deleteUserById, deleteUserByEmail, updateUserById , getUserById ,getUserByEmail };
