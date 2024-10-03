@@ -42,6 +42,40 @@ const addUser = async function (req, res) {
   }
 };
 
+const getUserById = async function (req, res) {
+
+  const userId = req.params.id;
+
+  try {
+    if (!userId.match(/^[0-9a-fA-F]{24}$/) || !userId) {
+      return res.status(400).json({
+        message: "ID is not a valid MongoDB _id, Please Check ID",
+        status: "fail",
+      });
+    }
+
+    const user = await userModel.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({
+        status: "fail",
+        message: `No user found for the provided id : ${userId}`,
+      });
+    }
+
+    return res.status(200).json({
+      data :{
+        user
+      },
+      status: "success",
+    });
+
+  } catch (error) {
+    console.log(error)
+    return res.status(500).json(error);
+  }
+};
+
 const deleteUserById = async function (req, res) {
   const userId = req.params.id;
 
@@ -144,10 +178,12 @@ const updateUserById = async function (req, res) {
     );
 
     if (!user) {
-      return res.status(404).json({ message: "User not found" , status :'fail' });
+      return res
+        .status(404)
+        .json({ message: "User not found", status: "fail" });
     }
 
-    res.status(200).json({ message: "User updated successfully", user });
+    res.status(200).json({ message: "User updated successfully", data:{user} });
   } catch (error) {
     res
       .status(400)
@@ -155,4 +191,4 @@ const updateUserById = async function (req, res) {
   }
 };
 
-module.exports = { addUser, deleteUserById, deleteUserByEmail, updateUserById };
+module.exports = { addUser, deleteUserById, deleteUserByEmail, updateUserById , getUserById };
