@@ -41,7 +41,7 @@ const commentSchema = new mongoose.Schema(
 
 commentSchema.pre('save' , (next)=>{
     if(this.isNew){
-        this.totalUpVotes = 0;
+        this.totalVotesUp = 0;
         this.totalVotesDown = 0;
     }
     next();
