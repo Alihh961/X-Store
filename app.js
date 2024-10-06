@@ -3,6 +3,8 @@ const path = require('path');
 const app = express();
 
 const userRouter = require('./api/router/userRouter');
+const gameRouter = require('./api/router/gameRouter');
+const publisherRouter = require('./api/router/publisherRouter')
 
 const publicPath = path.join(__dirname , './public');
 
@@ -20,6 +22,8 @@ app.get('/' , (req,res)=>{
 });
 
 app.use('/api/user' , userRouter);
+app.use('/api/game' , gameRouter);
+app.use('/api/publisher' , publisherRouter);
 
 
 app.get('*' , (req,res)=>{
