@@ -2,8 +2,6 @@ const userModel = require("../../model/user");
 const validator = require("validator");
 
 const addUser = async function (req, res) {
-  const userModel = require("../../model/user");
-
   const name = req.body.name;
   const email = req.body.email;
   const password = req.body.password;
@@ -33,6 +31,13 @@ const addUser = async function (req, res) {
       },
     });
   } catch (err) {
+    if (error.code === 11000) {
+      return res.status(400).json({
+        status: "fail",
+        message: "Email already exists, please chosse a different email",
+      });
+    }
+
     return res.status(400).json({
       error: {
         message: err.message,
@@ -43,7 +48,6 @@ const addUser = async function (req, res) {
 };
 
 const getUserById = async function (req, res) {
-
   const userId = req.params.id;
 
   try {
@@ -64,16 +68,15 @@ const getUserById = async function (req, res) {
     }
 
     return res.status(200).json({
-      data :{
-        user
+      data: {
+        user,
       },
       status: "success",
     });
-
   } catch (error) {
     return res.status(500).json({
-      status : 'error',
-      message : error.message
+      status: "error",
+      message: error.message,
     });
   }
 };
@@ -114,39 +117,38 @@ const deleteUserById = async function (req, res) {
   }
 };
 
-const getUserByEmail = async function(req,res){
-    const userEmail = req.params.email;
-    if (!validator.isEmail(userEmail) || !userEmail) {
-      res.status(400).json({
-        message: "Invalid Email Format",
+const getUserByEmail = async function (req, res) {
+  const userEmail = req.params.email;
+  if (!validator.isEmail(userEmail) || !userEmail) {
+    res.status(400).json({
+      message: "Invalid Email Format",
+      status: "fail",
+    });
+  }
+
+  try {
+    const user = await userModel.findOne({ email: userEmail });
+    if (!user) {
+      return res.status(404).json({
+        message: "No account associated to " + userEmail,
         status: "fail",
       });
     }
 
-    try{
-      const user = await userModel.findOne({email : userEmail});
-      if (!user) {
-        return res.status(404).json({
-          message: "No account associated to " + userEmail,
-          status: "fail",
-        });
-      }
-  
-      return res.status(200).json({
-        data : {
-          user
-        },
-        status: "success",
-      });
-    }
-    catch(error){
-      return res.status(500).json({
-        status : 'error',
-        message : error.message
-      })
-    }
+    return res.status(200).json({
+      data: {
+        user,
+      },
+      status: "success",
+    });
+  } catch (error) {
+    return res.status(500).json({
+      status: "error",
+      message: error.message,
+    });
+  }
+};
 
-}
 const deleteUserByEmail = async function (req, res) {
   const userEmail = req.params.email;
 
@@ -181,7 +183,7 @@ const deleteUserByEmail = async function (req, res) {
   }
 };
 
-const updateUserById = async function (req, res) {
+const updateUserEmailById = async function (req, res) {
   const userId = req.params.id;
   const email = req.body.email;
 
@@ -199,7 +201,7 @@ const updateUserById = async function (req, res) {
     });
   }
   if (!validator.isEmail(email)) {
-    return res.status("400").json({
+    return res.status(400).json({
       status: "fail",
       message: "Email format is not valid",
     });
@@ -218,12 +220,28 @@ const updateUserById = async function (req, res) {
         .json({ message: "User not found", status: "fail" });
     }
 
-    res.status(200).json({ message: "User updated successfully", data:{user} });
+    return res
+      .status(200)
+      .json({ message: "User updated successfully", data: { user } });
   } catch (error) {
-    res
-      .status(400)
-      .json({ message: "Error updating user", error: error.message });
+    if (error.code === 11000) {
+      return res
+        .status(400)
+        .json({
+          status: "fail",
+          message: "Email already in use, please choose another email",
+        });
+    }
+
+    return res.status(400).json({ message: "Error updating user" });
   }
 };
 
-module.exports = { addUser, deleteUserById, deleteUserByEmail, updateUserById , getUserById ,getUserByEmail };
+module.exports = {
+  addUser,
+  deleteUserById,
+  deleteUserByEmail,
+  updateUserEmailById,
+  getUserById,
+  getUserByEmail,
+};

@@ -13,7 +13,7 @@ router.get('/email/:email' , userController.getUserByEmail);
 
 router.delete('/email/:email' , userController.deleteUserByEmail);
 
-router.patch('/:id', userController.updateUserById)
+router.patch('/:id', userController.updateUserEmailById);
 
 
 module.exports = router;
