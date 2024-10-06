@@ -8,3 +8,8 @@ const publisherSchema = new mongoose.Schema(
         }
     }
 )
+
+const publisherModel = mongoose.model('publisher' , publisherSchema);
+
+
+module.exports = publisherModel;
