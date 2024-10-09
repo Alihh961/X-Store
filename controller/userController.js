@@ -1,4 +1,4 @@
-const userModel = require("../../model/user");
+const userModel = require("../model/user");
 const validator = require("validator");
 
 const addUser = async function (req, res) {

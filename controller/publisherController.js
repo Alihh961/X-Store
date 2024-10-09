@@ -1,4 +1,4 @@
-const publisherModel = require("../../model/publisher");
+const publisherModel = require("../model/publisher");
 
 const addPublisher = async function (req, res) {
   const name = req.body.name;

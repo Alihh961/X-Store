@@ -1,4 +1,4 @@
-const genreModel = require("../../model/genre");
+const genreModel = require("../model/genre");
 
 const addGenre = async (req, res) => {
   const genreName = req.body.name;
@@ -135,6 +135,7 @@ const deleteGenreById = async(req,res)=>{
         })
       }
 
-}
+};
+
 
 module.exports = { addGenre , editGenreNameOrSlugById ,deleteGenreById };
