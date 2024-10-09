@@ -31,6 +31,9 @@ app.use('/genre' , genreRouter);
 
 app.post('/register' , authController.signup);
 app.post('/login' , authController.login );
+app.post('/logout' , authController.logout);
+
+
 
 
 app.get('*' , (req,res)=>{
