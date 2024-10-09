@@ -52,11 +52,12 @@ const signup = async (req, res, next) => {
       email,
       password,
       confirmedPassword,
+      credit
     });
     await user.save();
 
     user.password = undefined;
-    const token = signToken();
+    const token = signToken(user._id,name);
 
 
 
@@ -102,12 +103,13 @@ const login = async (req, res) => {
     // httpOnly (true) means that the user can't access the cookie from the browser like the console
     res.cookie("jwt", token, { httpOnly: false, maxAge: maxAge * 1000 }); // * 1000 because in the cookie it is treated in milliseconds
 
-    // res.redirect('/lobby');
     return res.status(200).json({
       status: "success",
       statusCode: 200,
-      userId: user._id,
-      userName: user.userName,
+        data :{
+            user,
+            token
+        }
     });
   } catch (error) {
     return res.json({ message: error.message, statusCode: error.statusCode });

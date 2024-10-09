@@ -30,6 +30,7 @@ app.use('/publisher' , publisherRouter);
 app.use('/genre' , genreRouter);
 
 app.post('/register' , authController.signup);
+app.post('/login' , authController.login );
 
 
 app.get('*' , (req,res)=>{
