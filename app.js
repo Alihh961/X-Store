@@ -2,10 +2,12 @@ const express = require('express');
 const path = require('path');
 const app = express();
 
-const userRouter = require('./api/router/userRouter');
-const gameRouter = require('./api/router/gameRouter');
-const publisherRouter = require('./api/router/publisherRouter');
-const genreRouter = require('./api/router/genreRouter');
+const userRouter = require('./router/userRouter');
+const gameRouter = require('./router/gameRouter');
+const publisherRouter = require('./router/publisherRouter');
+const genreRouter = require('./router/genreRouter');
+
+const authController = require('./controller/authController');
 
 const publicPath = path.join(__dirname , './public');
 
@@ -22,10 +24,12 @@ app.get('/' , (req,res)=>{
     res.send('Home Page')
 });
 
-app.use('/api/user' , userRouter);
-app.use('/api/game' , gameRouter);
-app.use('/api/publisher' , publisherRouter);
-app.use('/api/genre' , genreRouter);
+app.use('/user' , userRouter);
+app.use('/game' , gameRouter);
+app.use('/publisher' , publisherRouter);
+app.use('/genre' , genreRouter);
+
+app.post('/register' , authController.signup);
 
 
 app.get('*' , (req,res)=>{

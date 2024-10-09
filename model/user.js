@@ -50,6 +50,7 @@ const userSchema = new mongoose.Schema(
     },
     giftLastTimeClaimedAt : {
       type : Date,
+      required : false
     }
   },
   {
