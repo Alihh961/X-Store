@@ -105,7 +105,6 @@ const updatePublisherNameById = async function (req, res) {
       { name: newPublisherName },
       { new: true }
     );
-    return res.json(updatedPublisher)
 
     return res.status(200).json({
       message: "Publisher name udpated successfully",

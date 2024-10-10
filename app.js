@@ -6,6 +6,8 @@ const userRouter = require('./router/userRouter');
 const gameRouter = require('./router/gameRouter');
 const publisherRouter = require('./router/publisherRouter');
 const genreRouter = require('./router/genreRouter');
+const languageRouter = require('./router/languageRouter');
+
 
 const authController = require('./controller/authController');
 
@@ -28,11 +30,11 @@ app.use('/user' , userRouter);
 app.use('/game' , gameRouter);
 app.use('/publisher' , publisherRouter);
 app.use('/genre' , genreRouter);
+app.use('/language' , languageRouter);
 
 app.post('/register' , authController.signup);
 app.post('/login' , authController.login );
 app.post('/logout' , authController.logout);
-
 
 
 

@@ -51,6 +51,11 @@ const userSchema = new mongoose.Schema(
     giftLastTimeClaimedAt : {
       type : Date,
       required : false
+    },
+    role : {
+      type : String,
+      enum : ["User" , "Admin" , "Read-Only"],
+      default : "User"
     }
   },
   {
