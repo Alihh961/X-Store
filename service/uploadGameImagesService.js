@@ -39,7 +39,6 @@ const upload = multer({
 
 const uploadImages = (req, res, next) => {
   upload(req, res, (err) => {
-    console.log(req.body);
     if (err) {
       return res.status(400).json({ message: err, status: 'fail' });
     }

@@ -197,6 +197,24 @@ const deleteGameById = async (req, res) => {
 
   try {
     await gameModel.findByIdAndDelete(gameId);
+
+    const coverPath = path.join(__dirname , `../public/uploads/images/game/${game.imageCover}`);
+    const logoPath = path.join(__dirname , `../public/uploads/images/game/${game.imageLogo}`);
+
+  
+    fs.unlink(coverPath, (err) => {
+      if (err) {
+        console.error('Error while deleting file:', err);
+      }
+    });
+
+    fs.unlink(logoPath, (err) => {
+      if (err) {
+        console.error('Error while deleting file:', err);
+      }
+    });
+
+
     return res.status(200).json({
       message: "Game Deleted successfully",
       status: "success",

@@ -5,7 +5,7 @@ const uploadGameImagesService = require('../service/uploadGameImagesService');
 
 
 router.get('/:id' , gameController.getGameById);
-router.post('/' ,uploadGameImagesService,  gameController.addGame);
+router.post('/' , uploadGameImagesService ,  gameController.addGame);
 router.patch('/:id' , gameController.updateGameById);
 router.delete('/:id' , gameController.deleteGameById);
 

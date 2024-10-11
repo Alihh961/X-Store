@@ -43,7 +43,7 @@ const addGenre = async (req, res) => {
   }
 };
 
-const editGenreNameOrSlugById = async (req, res) => {
+const updateGenreById = async (req, res) => {
   const genreId = req.params.id;
   const genreName = req.body.name;
   const genreSlug = req.body.slug;
@@ -137,5 +137,32 @@ const deleteGenreById = async(req,res)=>{
 
 };
 
+const getGenreById = async (req,res)=>{
+  const genreId = req.params.id;
 
-module.exports = { addGenre , editGenreNameOrSlugById ,deleteGenreById };
+  if (!genreId || !genreId.match(/^[0-9a-fA-F]{24}$/)) {
+    return res.status(400).json({
+      message: "ID is not a valid MongoDB _id, Please Check ID",
+      status: "fail",
+    });
+  }
+  const genre =  await genreModel.findById(id);
+
+  if(!genre){
+    return res.status(404).json({
+      message : "No genre related to the given id: " + genreId ,
+      status : 'fail'
+    })
+  }
+
+  return res.status(200).json({
+    data : {genre},
+    status : 'success'
+  })
+
+
+
+}
+
+
+module.exports = { addGenre , updateGenreById ,deleteGenreById ,getGenreById };

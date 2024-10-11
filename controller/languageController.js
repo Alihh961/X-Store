@@ -68,7 +68,6 @@ const addLanguage = async (req, res) => {
 
     fs.rename(oldFileLocation, newFileLocation, function (err) {
       if (err) throw err;
-      console.log("Language flag file successfully moved");
     });
 
     return res.status(201).json({
@@ -162,9 +161,17 @@ const removeLanguageById = async (req, res) => {
     }
     await languageModel.findByIdAndDelete(languageId);
 
+    const folderPath = path.join(__dirname , `../public/uploads/images/languagesFlag/${language.code}`);
+
+  
+    fs.rm(folderPath, { recursive: true, force: true }, (err) => {
+      if (err) {
+        console.error('Error while deleting folder:', err);
+      }});
+
     return res.status(200).json({
       message: "Deleted successfully",
-      status: "fail",
+      status: "success",
     });
   } catch (error) {
     return res.status(400).json({
