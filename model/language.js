@@ -6,17 +6,16 @@ const languageSchema = new mongoose.Schema(
     {
         name :{
             type : String,
-            unique :[true , "Language name already exists"],
+            unique :true,
             required : [true , "Language name is required"]
         },
         code : {
             type : String,
-            unique :[true , "Language code already exists"],
+            unique :true,
             required : [true , "Language code is required"]
         },
         urlFlag:{
             type :String,
-            required : [ true , "Language Flag image is requried"]
         }
     }
 );

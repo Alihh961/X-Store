@@ -9,7 +9,7 @@ const storage = multer.diskStorage({
     cb(null, path.join(__dirname, '../public/uploads/images/languagesFlag/')); // Path to store images
   },
   filename: function (req, file, cb) {
-    cb(null, Date.now() + path.extname(file.originalname)); // Unique filename
+    cb(null, Date.now() + path.extname(file.originalname)); 
   }
 });
 
@@ -34,17 +34,16 @@ const upload = multer({
     
     checkFileType(file, cb);
   }
-}).single('urlFlag'); // Only allow one image at a time
+}).single('urlFlag'); 
 
 const uploadImage = (req, res, next) => {
-  upload(req, res, (err) => {
-    
 
+  upload(req, res, (err) => {
     if (err) {
       return res.status(400).json({ message: err, status: 'fail' });
     }
-    if (!req.file) {
-      return res.status(400).json({ message: 'No file selected', status: 'fail' });
+    if (!req.file && req.method !== 'PATCH') { // file is not obligatory for updating Method
+      return res.status(400).json({ message: 'Flag is required', status: 'fail' });
     }
     next(); 
   });

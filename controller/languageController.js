@@ -189,12 +189,13 @@ const updateLanguageById = async (req, res) => {
       status: "fail",
     });
   }
-
+  
   const updateFields = {};
 
   if (req.body.name) updateFields.name = req.body.name;
   if (req.body.code) updateFields.code = req.body.code;
-  if (req.body.urlFlag) updateFields.urlFlag = req.body.urlFlag;
+  if(req.file) updateFields.urlFlag = req.file.filename;
+
 
   if (Object.keys(updateFields).length === 0) {
     return res.status(400).json({
@@ -205,6 +206,19 @@ const updateLanguageById = async (req, res) => {
   }
 
   try {
+
+
+    if(updateFields.urlFlag){
+      var oldLanguage = await languageModel.findById(languageId);
+      if(!oldLanguage){
+        return res.status(404).json({
+          message : "No language for the provided id: " + languageId,
+          status: 'fail'
+        })
+      }
+    }
+    
+
     let language = await languageModel.findByIdAndUpdate(
       languageId,
 
@@ -215,11 +229,36 @@ const updateLanguageById = async (req, res) => {
       }
     );
 
-    if (!language) {
-      throw { message: "Language not found" };
+    if(oldLanguage){
+      const oldFileName = path.join(__dirname, '../public/uploads/images/languagesFlag', oldLanguage.code,oldLanguage.urlFlag);
+      const newFileName = path.join(__dirname, '../public/uploads/images/languagesFlag', oldLanguage.code,language.urlFlag);
+
+    console.log({oldFileName , newFileName})
+      fs.rename(oldFileName , newFileName , (error)=>{
+        console.log('Error while renaming the file for language of id: ' +languageId);
+      })
+
+
+      // delete the file that recreated in languagesFlag folder
+      const pathFileToDelete = path.join(__dirname ,'../public/uploads/images/languagesFlag/' ,language.urlFlag);
+      fs.unlink(pathFileToDelete, (err) => {
+        if (err) {
+          console.error('Error while deleting the file:', err);
+        } else {
+          console.log('File deleted successfully!');
+        }
+      });
+
     }
 
-    return res.json(language);
+
+    return res.status(200).json({
+      message : 'Updated successfully',
+      status :'success',
+      data : {
+        language
+      }
+    });
   } catch (error) {
     if (error.code === 11000) {
       let duplicatedKey = Object.keys(error.keyPattern)[0];
@@ -231,7 +270,7 @@ const updateLanguageById = async (req, res) => {
       });
     }
 
-    return res.json({
+    return res.status(500).json({
       message: error.message,
       status: "fail",
     });

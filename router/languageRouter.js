@@ -5,7 +5,7 @@ const uploadFlagImageService = require('../service/uploadFlagImageService');
 
 router.post('/' , uploadFlagImageService , languageController.addLanguage);
 router.get('/:id' , languageController.getLanguageById);
-router.patch('/:id' , languageController.updateLanguageById);
+router.patch('/:id' , uploadFlagImageService, languageController.updateLanguageById);
 router.delete('/:id', languageController.removeLanguageById);
 
 
