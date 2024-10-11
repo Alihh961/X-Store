@@ -6,8 +6,10 @@ const gameSchema = new mongoose.Schema(
   {
     name: {
       type: String,
+      unique :true,
       required: [true, "Name is required"],
       trim: true,
+      index: true
     },
     price: {
       type: Number,
@@ -35,6 +37,7 @@ const gameSchema = new mongoose.Schema(
     },
     slug: {
       type: String,
+      unique :[true , "Game slug is unique"],
       required: [true, "Slug is required"],
     },
     language: {
