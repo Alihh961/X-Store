@@ -1,58 +1,91 @@
-const userModel = require('../model/game');
-const validator = require('validator');
-const gameModel = require('../model/game');
+const userModel = require("../model/game");
+const validator = require("validator");
+const gameModel = require("../model/game");
+const path = require('path');
+const fs = require('fs');
 
 
+const getGameById = async (req, res) => {
+  const id = req.params.id;
 
-const getGameById = async(req ,res)=>{
-    const id = req.params.id;
+  try {
+    if (!id.match(/^[0-9a-fA-F]{24}$/) || !id) {
+      return res.status(400).json({
+        message: "ID is not a valid MongoDB _id, Please Check ID",
+        status: "fail",
+      });
+    }
 
-    try {
-        if (!id.match(/^[0-9a-fA-F]{24}$/) || !id) {
-          return res.status(400).json({
-            message: "ID is not a valid MongoDB _id, Please Check ID",
-            status: "fail",
-          });
-        }
-    
-        const user = await userModel.findById(id);
-    
-        if (!user) {
-          return res.status(404).json({
-            status: "fail",
-            message: `No user found for the provided id : ${id}`,
-          });
-        }
-    
-        return res.status(200).json({
-          data :{
-            user
-          },
-          status: "success",
-        });
-    
-      } catch (error) {
-        return res.status(500).json({
-          status : 'error',
-          message : error.message
-        });
-      }
+    const user = await userModel.findById(id);
 
-    return res.send('sexes');
-}
+    if (!user) {
+      return res.status(404).json({
+        status: "fail",
+        message: `No user found for the provided id : ${id}`,
+      });
+    }
 
-const addGame = async(req,res)=>{
-  const { name, price, publishedAt, description, imageCover, imageLogo, slug, language, genre, publisher } = req.body;
-
-  const gameExists = await gameModel.findOne({name}) || await gameModel.findOne({slug});
-  
-  if(gameExists){
-    return res.status(400).json({
-      message :"Name and slug must be unique",
-      status: 'fail'
-    })
+    return res.status(200).json({
+      data: {
+        user,
+      },
+      status: "success",
+    });
+  } catch (error) {
+    return res.status(500).json({
+      status: "error",
+      message: error.message,
+    });
   }
-  try{
+
+  return res.send("sexes");
+};
+
+const addGame = async (req, res) => {
+  const {
+    name,
+    price,
+    publishedAt,
+    description,
+    slug,
+    language,
+    genre,
+    publisher,
+  } = req.body;
+
+  const imageCover = `${req.files.imageCover[0].filename}`;/* the new filename from multer*/
+  const imageLogo = `${req.files.imageLogo[0].filename}`;
+
+  const coverFilePath = path.join(
+    __dirname,
+    "../public/uploads/images/game/",
+    imageCover
+  );
+  const logoFilePath = path.join(
+    __dirname,
+    "../public/uploads/images/game/",
+    imageLogo
+  );
+
+  const gameExists =
+    (await gameModel.findOne({ name })) || (await gameModel.findOne({ slug }));
+
+  if (gameExists) {
+
+    fs.unlinkSync(coverFilePath , (error)=>{
+      console.log("Error while delete the cover image: " + coverFilePath);
+    })
+    fs.unlinkSync(logoFilePath , (error)=>{
+      console.log("Error while deleting logo " + logoFilePath);
+    })
+    return res.status(400).json({
+      message: "Name and slug must be unique",
+      status: "fail",
+    });
+  }
+
+  
+  try {
 
     const game = new gameModel({
       name,
@@ -65,31 +98,33 @@ const addGame = async(req,res)=>{
       language,
       genre,
       publisher,
-
     });
     await game.save();
 
     return res.status(201).json({
-      message : "Game created successcully",
-      data : {
-        game
+      message: "Game created successcully",
+      data: {
+        game,
       },
-      status :'success'
+      status: "success",
+    });
+  } catch (error) {
+
+    fs.unlinkSync(coverFilePath , (error)=>{
+      console.log("Error while delete the cover image: " + coverFilePath);
     })
-
-
-
-  }catch(error){
+    fs.unlinkSync(logoFilePath , (error)=>{
+      console.log("Error while deleting logo " + logoFilePath);
+    })
 
     return res.status(400).json({
-      message : error.message,
-      status: 'fail'
-    })
+      message: error.message,
+      status: "fail",
+    });
   }
+};
 
-}
-
-const updateGameById = async (req,res)=>{
+const updateGameById = async (req, res) => {
   const gameId = req.params.id;
   const changes = req.body;
 
@@ -100,58 +135,49 @@ const updateGameById = async (req,res)=>{
     });
   }
 
-
-  try{
-
-
+  try {
     const game = await gameModel.findById(gameId);
-    if(!game){
+    if (!game) {
       return res.status(404).json({
-        message : "No game for the provided id " + gameId,
-        status : 'fail'
-      })
+        message: "No game for the provided id " + gameId,
+        status: "fail",
+      });
     }
 
     // to insure that images wont be change here , another method will takecare of changing images
-    if ('imageCover' in changes) {
+    if ("imageCover" in changes) {
       delete changes.imageCover;
     }
-    if ('imageLogo' in changes) {
+    if ("imageLogo" in changes) {
       delete changes.imageLogo;
     }
 
-
-    const updatedGame = await gameModel.findByIdAndUpdate(
-      gameId,
-      changes,
-      {new : true}
-    )
+    const updatedGame = await gameModel.findByIdAndUpdate(gameId, changes, {
+      new: true,
+    });
 
     return res.status(201).json({
-      message : "Game updated successfully",
-      data : {
-        updatedGame
+      message: "Game updated successfully",
+      data: {
+        updatedGame,
       },
-      status : 'success',
-    
-    })
-
-
-  }catch(error){
-    if(error.code === 11000){
+      status: "success",
+    });
+  } catch (error) {
+    if (error.code === 11000) {
       return res.status(400).json({
-        message : 'Name and slug are unique',
-        status : 'fail'
-      })
+        message: "Name and slug are unique",
+        status: "fail",
+      });
     }
     return res.status(400).json({
-      message : error.message,
-      status : 'fail'
-    })
+      message: error.message,
+      status: "fail",
+    });
   }
-}
+};
 
-const deleteGameById = async (req,res)=>{
+const deleteGameById = async (req, res) => {
   const gameId = req.params.id;
 
   if (!gameId.match(/^[0-9a-fA-F]{24}$/) || !gameId) {
@@ -162,32 +188,25 @@ const deleteGameById = async (req,res)=>{
   }
   const game = await gameModel.findById(gameId);
 
-  if(!game){
+  if (!game) {
     return res.status(404).json({
-      message : `No game related to the id ${gameId} was found`,
-      status : 'fail'
-    })
+      message: `No game related to the id ${gameId} was found`,
+      status: "fail",
+    });
   }
 
-  try{
-
-  await gameModel.findByIdAndDelete(gameId);
-  return res.status(200).json({
-    message : 'Game Deleted successfully',
-    status : 'success'
-  })
-    
-  }catch(error){
+  try {
+    await gameModel.findByIdAndDelete(gameId);
+    return res.status(200).json({
+      message: "Game Deleted successfully",
+      status: "success",
+    });
+  } catch (error) {
     return res.status(400).json({
-      message : error.message,
-      status : 'fail'
-    })
+      message: error.message,
+      status: "fail",
+    });
   }
+};
 
-
-
-
-}
-
-
-module.exports = {getGameById , addGame , updateGameById , deleteGameById}
+module.exports = { getGameById, addGame, updateGameById, deleteGameById };

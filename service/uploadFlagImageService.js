@@ -5,7 +5,6 @@ const multer = require('multer');
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     
-    console.log(req.body.code)
 
     cb(null, path.join(__dirname, '../public/uploads/images/languagesFlag/')); // Path to store images
   },
