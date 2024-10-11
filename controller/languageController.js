@@ -1,28 +1,43 @@
 const languageModel = require("../model/language");
 const fs = require("fs");
+const path = require("path");
 
 const addLanguage = async (req, res) => {
   const name = req.body.name;
   const code = req.body.code;
-  const urlFlag = req.body.urlFlag;
+  const urlFlag = req.file.filename;
 
-  if (!name) {
-    return res.status(422).json({
-      message: "Name is required",
-      status: "fail",
+  const filePath = path.join(
+    __dirname,
+    "../public/uploads/images/languagesFlag/" + code,
+    req.file.filename /* the new filename from multer*/
+  );
+
+  if (!name || !code || !urlFlag) {
+    // Check if the file was uploaded and delete it because there is an error in creating the model
+    fs.unlink(filePath, (err) => {
+      if (err) {
+        console.error(`Failed to delete file: ${filePath}`);
+      }
     });
-  }
-  if (!code) {
-    return res.status(422).json({
-      message: "Code is required",
-      status: "fail",
-    });
-  }
-  if (!urlFlag) {
-    return res.status(422).json({
-      message: "Image is required",
-      status: "fail",
-    });
+    if (!name) {
+      return res.status(422).json({
+        message: "Name is required",
+        status: "fail",
+      });
+    }
+    if (!code) {
+      return res.status(422).json({
+        message: "Code is required",
+        status: "fail",
+      });
+    }
+    if (!urlFlag) {
+      return res.status(422).json({
+        message: "Image is required",
+        status: "fail",
+      });
+    }
   }
 
   try {
@@ -34,6 +49,28 @@ const addLanguage = async (req, res) => {
 
     await language.save();
 
+    const oldFolder = path.join(
+      __dirname,
+      `../public/uploads/images/languagesFlag`
+    );
+    const newFolder = path.join(
+      __dirname,
+      `../public/uploads/images/languagesFlag/${code}`
+    );
+
+    // create the new folder if doesnt exists
+    if (!fs.existsSync(newFolder)) {
+      fs.mkdirSync(newFolder);
+    }
+
+    const oldFileLocation = oldFolder + "/" + urlFlag;
+    const newFileLocation = newFolder + "/" + urlFlag;
+
+    fs.rename(oldFileLocation, newFileLocation, function (err) {
+      if (err) throw err;
+      console.log("Language flag file successfully moved");
+    });
+
     return res.status(201).json({
       message: "Language added successfully",
       data: {
@@ -42,6 +79,20 @@ const addLanguage = async (req, res) => {
       status: "success",
     });
   } catch (error) {
+
+    const filePath = path.join(
+      __dirname,
+      "../public/uploads/images/languagesFlag" ,
+      req.file.filename /* the new filename from multer*/
+    );
+
+    // Check if the file was uploaded and delete it because there is an error in creating the model
+    fs.unlink(filePath, (err) => {
+      if (err) {
+        console.error(`Failed to delete file: ${filePath}`);
+      }
+    });
+
     if (error.code === 11000) {
       let duplicatedKey = Object.keys(error.keyPattern)[0];
       const capitalizedDuplicatedKey =
@@ -140,38 +191,38 @@ const updateLanguageById = async (req, res) => {
 
   if (Object.keys(updateFields).length === 0) {
     return res.status(400).json({
-      message: "At least one of Name, Code, or Flag URL must be provided for update",
-      status: "fail"
+      message:
+        "At least one of Name, Code, or Flag URL must be provided for update",
+      status: "fail",
     });
   }
 
   try {
     let language = await languageModel.findByIdAndUpdate(
       languageId,
-      
-        updateFields,
-      
+
+      updateFields,
+
       {
         new: true,
       }
     );
 
-    if(!language){
-        throw { message : 'Language not found'}
+    if (!language) {
+      throw { message: "Language not found" };
     }
 
     return res.json(language);
   } catch (error) {
     if (error.code === 11000) {
-
-        let duplicatedKey = Object.keys(error.keyPattern)[0];
-        const capitalizedDuplicatedKey =
-          duplicatedKey.charAt(0).toUpperCase() + duplicatedKey.slice(1);
-        return res.status(400).json({
-          message: `${capitalizedDuplicatedKey} language must be unique`,
-          status: "fail",
-        });
-      }
+      let duplicatedKey = Object.keys(error.keyPattern)[0];
+      const capitalizedDuplicatedKey =
+        duplicatedKey.charAt(0).toUpperCase() + duplicatedKey.slice(1);
+      return res.status(400).json({
+        message: `${capitalizedDuplicatedKey} language must be unique`,
+        status: "fail",
+      });
+    }
 
     return res.json({
       message: error.message,
@@ -179,7 +230,6 @@ const updateLanguageById = async (req, res) => {
     });
   }
 };
-
 
 module.exports = {
   addLanguage,
