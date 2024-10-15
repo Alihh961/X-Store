@@ -1,5 +1,6 @@
 const userModel = require("../model/user");
 const validator = require("validator");
+const checkMongoIdValidation = require('../helpers/functions').checkMongoIdValidation;
 
 const addUser = async function (req, res) {
   const name = req.body.name;
@@ -51,10 +52,11 @@ const getUserById = async function (req, res) {
   const userId = req.params.id;
 
   try {
-    if (!userId.match(/^[0-9a-fA-F]{24}$/) || !userId) {
+    if(checkMongoIdValidation([userId] , 'user').error){
+      let error = checkMongoIdValidation([userId], "user").error;
       return res.status(400).json({
-        message: "ID is not a valid MongoDB _id, Please Check ID",
-        status: "fail",
+        message: error.message,
+        status: error.status,
       });
     }
 
@@ -84,10 +86,11 @@ const getUserById = async function (req, res) {
 const deleteUserById = async function (req, res) {
   const userId = req.params.id;
 
-  if (!userId.match(/^[0-9a-fA-F]{24}$/) || !userId) {
+  if(checkMongoIdValidation([userId] , 'user').error){
+    let error = checkMongoIdValidation([userId], "user").error;
     return res.status(400).json({
-      message: "ID is not a valid MongoDB _id, Please Check ID",
-      status: "fail",
+      message: error.message,
+      status: error.status,
     });
   }
 
@@ -187,10 +190,11 @@ const updateUserEmailById = async function (req, res) {
   const userId = req.params.id;
   const email = req.body.email;
 
-  if (!userId.match(/^[0-9a-fA-F]{24}$/) || !userId) {
+  if(checkMongoIdValidation([userId] , 'user').error){
+    let error = checkMongoIdValidation([userId], "user").error;
     return res.status(400).json({
-      message: "ID is not a valid MongoDB _id, Please Check ID",
-      status: "fail",
+      message: error.message,
+      status: error.status,
     });
   }
 

@@ -1,4 +1,6 @@
 const publisherModel = require("../model/publisher");
+const checkMongoIdValidation = require('../helpers/functions').checkMongoIdValidation;
+
 
 const addPublisher = async function (req, res) {
   const name = req.body.name;
@@ -41,10 +43,11 @@ const addPublisher = async function (req, res) {
 const deletePublisherById = async function (req, res) {
   const publisherId = req.params.id;
 
-  if (!publisherId.match(/^[0-9a-fA-F]{24}$/) || !publisherId) {
+  if(checkMongoIdValidation([publisherId] , 'publisher').error){
+    let error = checkMongoIdValidation([publisherId], "publisher").error;
     return res.status(400).json({
-      message: "ID is not a valid MongoDB _id, Please Check ID",
-      status: "fail",
+      message: error.message,
+      status: error.status,
     });
   }
   try {
@@ -76,10 +79,11 @@ const updatePublisherNameById = async function (req, res) {
   const newPublisherName = req.body.name;
   
 
-  if (!publisherId.match(/^[0-9a-fA-F]{24}$/) || !publisherId) {
+  if(checkMongoIdValidation([publisherId] , 'publisher').error){
+    let error = checkMongoIdValidation([publisherId], "publisher").error;
     return res.status(400).json({
-      message: "ID is not a valid MongoDB _id, Please Check ID",
-      status: "fail",
+      message: error.message,
+      status: error.status,
     });
   }
 
@@ -132,12 +136,13 @@ const getPublisherById = async function(req , res){
     const publisherId = req.params.id;
 
 
-    if (!publisherId.match(/^[0-9a-fA-F]{24}$/) || !publisherId) {
-        return res.status(400).json({
-          message: "ID is not a valid MongoDB _id, Please Check ID",
-          status: "fail",
-        });
-      }
+    if(checkMongoIdValidation([publisherId] , 'publisher').error){
+      let error = checkMongoIdValidation([publisherId], "publisher").error;
+      return res.status(400).json({
+        message: error.message,
+        status: error.status,
+      });
+    }
 
       try{
         const publisher = await publisherModel.findById(publisherId);

@@ -1,6 +1,8 @@
 const languageModel = require("../model/language");
 const fs = require("fs");
 const path = require("path");
+const checkMongoIdValidation = require('../helpers/functions').checkMongoIdValidation;
+
 
 const addLanguage = async (req, res) => {
   const name = req.body.name;
@@ -112,10 +114,12 @@ const addLanguage = async (req, res) => {
 const getLanguageById = async (req, res) => {
   const languageId = req.params.id;
 
-  if (!languageId || !languageId.match(/^[0-9a-fA-F]{24}$/)) {
+
+  if(checkMongoIdValidation([languageId] , 'language').error){
+    let error = checkMongoIdValidation([languageId], "language").error;
     return res.status(400).json({
-      message: "ID is not a valid MongoDB _id, Please Check ID",
-      status: "fail",
+      message: error.message,
+      status: error.status,
     });
   }
 
@@ -143,13 +147,14 @@ const getLanguageById = async (req, res) => {
   }
 };
 
-const removeLanguageById = async (req, res) => {
+const deleteLanguageById = async (req, res) => {
   const languageId = req.params.id;
 
-  if (!languageId || !languageId.match(/^[0-9a-fA-F]{24}$/)) {
+  if(checkMongoIdValidation([languageId] , 'language').error){
+    let error = checkMongoIdValidation([languageId], "language").error;
     return res.status(400).json({
-      message: "ID is not a valid MongoDB _id, Please Check ID",
-      status: "fail",
+      message: error.message,
+      status: error.status,
     });
   }
 
@@ -183,10 +188,12 @@ const removeLanguageById = async (req, res) => {
 
 const updateLanguageById = async (req, res) => {
   const languageId = req.params.id;
-  if (!languageId || !languageId.match(/^[0-9a-fA-F]{24}$/)) {
+
+  if(checkMongoIdValidation([languageId] , 'language').error){
+    let error = checkMongoIdValidation([languageId], "language").error;
     return res.status(400).json({
-      message: "ID is not a valid MongoDB _id, Please Check ID",
-      status: "fail",
+      message: error.message,
+      status: error.status,
     });
   }
   
@@ -279,7 +286,7 @@ const updateLanguageById = async (req, res) => {
 
 module.exports = {
   addLanguage,
-  removeLanguageById,
+  deleteLanguageById,
   getLanguageById,
   updateLanguageById,
 };

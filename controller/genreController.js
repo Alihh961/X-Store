@@ -1,4 +1,6 @@
 const genreModel = require("../model/genre");
+const checkMongoIdValidation = require('../helpers/functions').checkMongoIdValidation;
+
 
 const addGenre = async (req, res) => {
   const genreName = req.body.name;
