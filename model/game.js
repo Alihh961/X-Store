@@ -9,7 +9,6 @@ const gameSchema = new mongoose.Schema(
       unique :true,
       required: [true, "Name is required"],
       trim: true,
-      index: true
     },
     price: {
       type: Number,
@@ -40,16 +39,19 @@ const gameSchema = new mongoose.Schema(
       unique :[true , "Game slug is unique"],
       required: [true, "Slug is required"],
     },
-    language: {
-      type: String, //will be associated to language model
+    languages: [{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Language",
       required: [true, "At least one language is required"],
-    },
+    }],
     genre: {
-      type: String, //will be associated to genres model
+      type: mongoose.Schema.Types.ObjectId,
+      ref : "Genre",
       required: [true, "At least one genre is required required"],
     },
     publisher: {
-      type: String, //will be associated to publisher model
+      type: mongoose.Schema.Types.ObjectId,
+      ref : "Publisher",
       required: [true, "Publisher is required"],
     },
     totalDownVotes: {

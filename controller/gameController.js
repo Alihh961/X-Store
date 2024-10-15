@@ -1,20 +1,20 @@
 const userModel = require("../model/game");
 const validator = require("validator");
 const gameModel = require("../model/game");
-const path = require('path');
-const fs = require('fs');
+const path = require("path");
+const fs = require("fs");
+const languageModel = require("../model/language");
+const publisherModel = require("../model/publisher");
+const genreModel = require("../model/genre");
 
+const checkMongoIdValidation =
+  require("../helpers/functions").checkMongoIdValidation;
 
 const getGameById = async (req, res) => {
   const id = req.params.id;
 
   try {
-    if (!id.match(/^[0-9a-fA-F]{24}$/) || !id) {
-      return res.status(400).json({
-        message: "ID is not a valid MongoDB _id, Please Check ID",
-        status: "fail",
-      });
-    }
+    if (!checkMongoIdValidation(id, "game", res)) return;
 
     const user = await userModel.findById(id);
 
@@ -48,12 +48,34 @@ const addGame = async (req, res) => {
     publishedAt,
     description,
     slug,
-    language,
-    genre,
-    publisher,
+    languagesId,
+    genreId,
+    publisherId,
   } = req.body;
 
-  const imageCover = `${req.files.imageCover[0].filename}`;/* the new filename from multer*/
+  if (checkMongoIdValidation(languagesId, "language").error) {
+    let error = checkMongoIdValidation(languagesId, "language").error;
+    return res.status(400).json({
+      message: error.message,
+      status: error.status,
+    });
+  }
+  if (checkMongoIdValidation([publisherId], "publisher").error) {
+    let error = checkMongoIdValidation([publisherId], "publisher").error;
+    return res.status(400).json({
+      message: error.message,
+      status: error.status,
+    });
+  }
+  if (checkMongoIdValidation([genreId], "genre").error) {
+    let error = checkMongoIdValidation([genreId], "genre").error;
+    return res.status(400).json({
+      message: error.message,
+      status: error.status,
+    });
+  }
+
+  const imageCover = `${req.files.imageCover[0].filename}`; /* the new filename from multer*/
   const imageLogo = `${req.files.imageLogo[0].filename}`;
 
   const coverFilePath = path.join(
@@ -71,21 +93,48 @@ const addGame = async (req, res) => {
     (await gameModel.findOne({ name })) || (await gameModel.findOne({ slug }));
 
   if (gameExists) {
-
-    fs.unlinkSync(coverFilePath , (error)=>{
+    fs.unlinkSync(coverFilePath, (error) => {
       console.log("Error while delete the cover image: " + coverFilePath);
-    })
-    fs.unlinkSync(logoFilePath , (error)=>{
+    });
+    fs.unlinkSync(logoFilePath, (error) => {
       console.log("Error while deleting logo " + logoFilePath);
-    })
+    });
     return res.status(400).json({
       message: "Name and slug must be unique",
       status: "fail",
     });
   }
 
-  
   try {
+    let languages = [];
+
+    for (const id of languagesId) {
+      const language = await languageModel.findById(id);
+      if (language) languages.push(language);
+    }
+
+    if (!languages) {
+      return res.status(404).json({
+        message: `No languages found for the ids provided`,
+        stats: "fail",
+      });
+    }
+
+    const publisher = await publisherModel.findById(publisherId);
+    if (!publisher) {
+      return res.status(404).json({
+        message: `No publisher found for the id: ${publisherId}`,
+        stats: "fail",
+      });
+    }
+
+    const genre = await genreModel.findById(genreId);
+    if (!genre) {
+      return res.status(404).json({
+        message: `No genre found for the id: ${genreId}`,
+        stats: "fail",
+      });
+    }
 
     const game = new gameModel({
       name,
@@ -95,10 +144,13 @@ const addGame = async (req, res) => {
       imageCover,
       imageLogo,
       slug,
-      language,
+      languages,
       genre,
       publisher,
     });
+
+    return res.json(game);
+
     await game.save();
 
     return res.status(201).json({
@@ -109,13 +161,12 @@ const addGame = async (req, res) => {
       status: "success",
     });
   } catch (error) {
-
-    fs.unlinkSync(coverFilePath , (error)=>{
+    fs.unlinkSync(coverFilePath, (error) => {
       console.log("Error while delete the cover image: " + coverFilePath);
-    })
-    fs.unlinkSync(logoFilePath , (error)=>{
+    });
+    fs.unlinkSync(logoFilePath, (error) => {
       console.log("Error while deleting logo " + logoFilePath);
-    })
+    });
 
     return res.status(400).json({
       message: error.message,
@@ -128,10 +179,11 @@ const updateGameById = async (req, res) => {
   const gameId = req.params.id;
   const changes = req.body;
 
-  if (!gameId.match(/^[0-9a-fA-F]{24}$/) || !gameId) {
+  if (checkMongoIdValidation([gameId], "game").error) {
+    let error = checkMongoIdValidation([gameId], "game").error;
     return res.status(400).json({
-      message: "ID is not a valid MongoDB _id, Please Check ID",
-      status: "fail",
+      message: error.message,
+      status: error.status,
     });
   }
 
@@ -180,10 +232,11 @@ const updateGameById = async (req, res) => {
 const deleteGameById = async (req, res) => {
   const gameId = req.params.id;
 
-  if (!gameId.match(/^[0-9a-fA-F]{24}$/) || !gameId) {
+  if(checkMongoIdValidation([gameId] , 'game').error){
+    let error = checkMongoIdValidation([gameId], "game").error;
     return res.status(400).json({
-      message: "ID is not a valid MongoDB _id, Please Check ID",
-      status: "fail",
+      message: error.message,
+      status: error.status,
     });
   }
   const game = await gameModel.findById(gameId);
@@ -198,22 +251,26 @@ const deleteGameById = async (req, res) => {
   try {
     await gameModel.findByIdAndDelete(gameId);
 
-    const coverPath = path.join(__dirname , `../public/uploads/images/game/${game.imageCover}`);
-    const logoPath = path.join(__dirname , `../public/uploads/images/game/${game.imageLogo}`);
+    const coverPath = path.join(
+      __dirname,
+      `../public/uploads/images/game/${game.imageCover}`
+    );
+    const logoPath = path.join(
+      __dirname,
+      `../public/uploads/images/game/${game.imageLogo}`
+    );
 
-  
     fs.unlink(coverPath, (err) => {
       if (err) {
-        console.error('Error while deleting file:', err);
+        console.error("Error while deleting file:", err);
       }
     });
 
     fs.unlink(logoPath, (err) => {
       if (err) {
-        console.error('Error while deleting file:', err);
+        console.error("Error while deleting file:", err);
       }
     });
-
 
     return res.status(200).json({
       message: "Game Deleted successfully",

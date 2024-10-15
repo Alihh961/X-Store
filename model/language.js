@@ -16,7 +16,12 @@ const languageSchema = new mongoose.Schema(
         },
         urlFlag:{
             type :String,
-        }
+        },
+        game:[{
+            type : mongoose.Schema.Types.ObjectId,
+            ref : 'Game',
+            required : false
+        }]
     }
 );
 

@@ -6,7 +6,11 @@ const publisherSchema = new mongoose.Schema(
             type : String,
             unique : [true , 'Publisher name already exists'],
             required : [true , 'Publisher name is required']
-        }
+        },
+        game : [{
+            type : mongoose.Schema.Types.ObjectId,
+            ref: 'Game',
+        }]
     }
 )
 

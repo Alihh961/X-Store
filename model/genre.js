@@ -11,7 +11,13 @@ const genreSchema = new mongoose.Schema(
             type :String,
             unique :true,
             required : [true , 'Genre Slug is required']
-        }
+        },
+        game : [{
+            type : mongoose.Schema.Types.ObjectId,
+            ref : 'Game',
+            required : false,
+
+        }]
     }
 );
 
