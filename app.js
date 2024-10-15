@@ -7,6 +7,7 @@ const gameRouter = require('./router/gameRouter');
 const publisherRouter = require('./router/publisherRouter');
 const genreRouter = require('./router/genreRouter');
 const languageRouter = require('./router/languageRouter');
+const commentRouter = require('./router/commentRouter');
 
 
 const authController = require('./controller/authController');
@@ -31,6 +32,7 @@ app.use('/game' , gameRouter);
 app.use('/publisher' , publisherRouter);
 app.use('/genre' , genreRouter);
 app.use('/language' , languageRouter);
+app.use('/comment' , commentRouter );
 
 app.post('/register' , authController.signup);
 app.post('/login' , authController.login );

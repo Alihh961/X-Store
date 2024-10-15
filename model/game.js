@@ -24,6 +24,7 @@ const gameSchema = new mongoose.Schema(
     },
     description: {
       type: String,
+      trim: true,
       required: [true, "Description is required"],
     },
     imageCover: {
@@ -36,6 +37,7 @@ const gameSchema = new mongoose.Schema(
     },
     slug: {
       type: String,
+      trim :true,
       unique :[true , "Game slug is unique"],
       required: [true, "Slug is required"],
     },
@@ -54,6 +56,10 @@ const gameSchema = new mongoose.Schema(
       ref : "Publisher",
       required: [true, "Publisher is required"],
     },
+    comments : [{
+      type : mongoose.Types.ObjectId,
+      ref : 'comment',
+    }],
     totalDownVotes: {
       type: Number,
       default: 0,

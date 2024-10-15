@@ -52,6 +52,7 @@ const addGame = async (req, res) => {
     genreId,
     publisherId,
   } = req.body;
+  const comments = {};
 
   if (checkMongoIdValidation(languagesId, "language").error) {
     let error = checkMongoIdValidation(languagesId, "language").error;
@@ -146,10 +147,9 @@ const addGame = async (req, res) => {
       slug,
       languages,
       genre,
-      publisher,
+      publisher
     });
 
-    return res.json(game);
 
     await game.save();
 

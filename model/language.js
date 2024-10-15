@@ -7,10 +7,12 @@ const languageSchema = new mongoose.Schema(
         name :{
             type : String,
             unique :true,
+            trim :true,
             required : [true , "Language name is required"]
         },
         code : {
             type : String,
+            trim :true,
             unique :true,
             required : [true , "Language code is required"]
         },

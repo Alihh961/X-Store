@@ -4,6 +4,7 @@ const publisherSchema = new mongoose.Schema(
     {
         name: {
             type : String,
+            trim :true,
             unique : [true , 'Publisher name already exists'],
             required : [true , 'Publisher name is required']
         },
