@@ -8,7 +8,7 @@ const publisherModel = require("../model/publisher");
 const genreModel = require("../model/genre");
 
 const checkMongoIdValidation =
-  require("../helpers/functions").checkMongoIdValidation;
+  require("../utilities/functions").checkMongoIdValidation;
 
 const getGameById = async (req, res) => {
   const id = req.params.id;
@@ -37,8 +37,6 @@ const getGameById = async (req, res) => {
       message: error.message,
     });
   }
-
-  return res.send("sexes");
 };
 
 const addGame = async (req, res) => {
@@ -161,6 +159,7 @@ const addGame = async (req, res) => {
       status: "success",
     });
   } catch (error) {
+    console.log(error);
     fs.unlinkSync(coverFilePath, (error) => {
       console.log("Error while delete the cover image: " + coverFilePath);
     });
@@ -168,10 +167,10 @@ const addGame = async (req, res) => {
       console.log("Error while deleting logo " + logoFilePath);
     });
 
-    return res.status(400).json({
-      message: error.message,
-      status: "fail",
-    });
+    return res.status(500).json({
+        message : 'Internal error',
+        status :'fail'
+    })
   }
 };
 
@@ -216,16 +215,17 @@ const updateGameById = async (req, res) => {
       status: "success",
     });
   } catch (error) {
+    console.log(error);
     if (error.code === 11000) {
       return res.status(400).json({
         message: "Name and slug are unique",
         status: "fail",
       });
     }
-    return res.status(400).json({
-      message: error.message,
-      status: "fail",
-    });
+    return res.status(500).json({
+        message : 'Internal error',
+        status :'fail'
+    })
   }
 };
 
@@ -277,10 +277,11 @@ const deleteGameById = async (req, res) => {
       status: "success",
     });
   } catch (error) {
-    return res.status(400).json({
-      message: error.message,
-      status: "fail",
-    });
+    console.log(error);
+    return res.status(500).json({
+        message : 'Internal error',
+        status :'fail'
+    })
   }
 };
 

@@ -9,7 +9,6 @@ router.post('/' , publisherController.addPublisher);
 router.delete('/:id' ,publisherController.deletePublisherById );
 router.patch('/:id' , publisherController.updatePublisherNameById);
 router.get('/:id' , publisherController.getPublisherById);
-router.get('/name/:name' , publisherController.getPublisherByName );
 
 
 

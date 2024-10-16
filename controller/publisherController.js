@@ -1,15 +1,14 @@
+const { response } = require("express");
 const publisherModel = require("../model/publisher");
-const checkMongoIdValidation = require('../helpers/functions').checkMongoIdValidation;
+const checkMongoIdValidation = require('../utilities/functions').checkMongoIdValidation;
+const responseHandler =  require('../utilities/responseHandler')
 
 
 const addPublisher = async function (req, res) {
   const name = req.body.name;
 
   if (!name) {
-    return res.status("400").json({
-      status: "fail",
-      message: "Publisher name is required",
-    });
+    return responseHandler.badRequestResponse(res , "Publisher name is required");
   }
   let newPublisher = new publisherModel({
     name,
@@ -18,25 +17,13 @@ const addPublisher = async function (req, res) {
   try {
     const publisher = await newPublisher.save();
 
-    return res.status(200).json({
-      status: "success",
-      message: "Pubisher added successfully",
-      data: {
-        publisher,
-      },
-    });
+    return responseHandler.successResponse(res , 201 , "Created successfully" , publisher);
+    
   } catch (error) {
     if (error.code === 11000) {
-      return res.status(400).json({
-        status: "fail",
-        message:
-          "Publisher name already exists, please choose a different name",
-      });
+      return responseHandler.badRequestResponse(res , "Publisher name already exists, please choose a different name");
     }
-    return res.status(400).json({
-      status: "fail",
-      message: error.message,
-    });
+    return responseHandler.internalErrorResponse(res , error);
   }
 };
 
@@ -45,31 +32,19 @@ const deletePublisherById = async function (req, res) {
 
   if(checkMongoIdValidation([publisherId] , 'publisher').error){
     let error = checkMongoIdValidation([publisherId], "publisher").error;
-    return res.status(400).json({
-      message: error.message,
-      status: error.status,
-    });
+    return responseHandler.badRequestResponse(res , error.message);
   }
   try {
     const publisher = await publisherModel.findById(publisherId);
     if (!publisher) {
-      return res.status(404).json({
-        message: "No publisher was found for the provided ID:" + publisherId,
-        status: "fail",
-      });
+      return responseHandler.badRequestResponse(res, "publisher");
     }
 
     await publisherModel.findByIdAndDelete(publisherId);
 
-    return res.status(200).json({
-      message: "Publisher deleted successfully",
-      status: "success",
-    });
+    return responseHandler.successResponse(res, 200 , "Deleted successfully");
   } catch (error) {
-    return res.status(400).json({
-      message: error.message,
-      status: "fail",
-    });
+    return responseHandler.internalErrorResponse(res, error);
   }
 };
 
@@ -81,27 +56,18 @@ const updatePublisherNameById = async function (req, res) {
 
   if(checkMongoIdValidation([publisherId] , 'publisher').error){
     let error = checkMongoIdValidation([publisherId], "publisher").error;
-    return res.status(400).json({
-      message: error.message,
-      status: error.status,
-    });
+    return responseHandler.badRequestResponse(res , error.message);
   }
 
   if (!newPublisherName) {
-    return res.status(400).json({
-      message: "New name is required",
-      status: "fail",
-    });
+    return responseHandler.badRequestResponse(res , 'Name is required')
   }
 
   try {
     const publisher = await publisherModel.findById(publisherId);
 
     if (!publisher) {
-      return res.status(404).json({
-        message: "No publisher was found for the provided ID: " + publisherId,
-        status: "fail",
-      });
+      return responseHandler.notFoundResponse(res , 'publisher')
     }
 
     const updatedPublisher = await publisherModel.findByIdAndUpdate(
@@ -110,25 +76,14 @@ const updatePublisherNameById = async function (req, res) {
       { new: true }
     );
 
-    return res.status(200).json({
-      message: "Publisher name udpated successfully",
-      status: "success",
-      data: {
-        publisher: updatedPublisher,
-      },
-    });
+    return responseHandler.successResponse(res , 200 , "Updated successfully" , updatedPublisher);
+    
   } catch (error) {
     if(error.code === 11000
     ){
-        return res.status(400).json({
-            message : 'Publisher name already exists, please choose a different name',
-            status : 'fail'
-        })
+        return responseHandler.badRequestResponse(res , "Publisher name already exists, please choose a different name" )
     }
-    return res.status(400).json({
-        message : error.message,
-        status : 'fail'
-    })
+    return responseHandler.internalErrorResponse(res ,error);
   }
 };
 
@@ -138,33 +93,19 @@ const getPublisherById = async function(req , res){
 
     if(checkMongoIdValidation([publisherId] , 'publisher').error){
       let error = checkMongoIdValidation([publisherId], "publisher").error;
-      return res.status(400).json({
-        message: error.message,
-        status: error.status,
-      });
+      return responseHandler.badRequestResponse(res, error.message);
     }
 
       try{
         const publisher = await publisherModel.findById(publisherId);
 
         if(!publisher){
-          return res.status(400).json({
-              message : "No publisher was found for the provided ID: " + publisherId ,
-              status : 'fail'
-          })
+          return responseHandler.notFoundResponse(res , "publisher")
         }
 
-        return res.status(200).json({
-            data: {
-                publisher
-            },
-            status :'success'
-        })
+        return responseHandler.successResponse(res , 200 , "success" , publisher);
       }catch(error){
-        return res.status(400).json({
-            message : error.message,
-            status : 'fail'
-        })
+        return responseHandler.internalErrorResponse(res , error);
       }
     
 
@@ -172,43 +113,6 @@ const getPublisherById = async function(req , res){
 
 };
 
-const getPublisherByName = async function(req , res){
-    const publisherName = req.params.name;
 
 
-    if (!publisherName) {
-        return res.status(400).json({
-          message: "Publisher name is required",
-          status: "fail",
-        });
-      }
-
-      try{
-        const publisher = await publisherModel.findOne({name: publisherName});
-
-        if(!publisher){
-          return res.status(404).json({
-              message : "No publisher found for the name: " + publisherName ,
-              status : 'fail'
-          })
-        }
-
-        return res.status(200).json({
-            data: {
-                publisher
-            },
-            status :'success'
-        })
-      }catch(error){
-        return res.status(400).json({
-            message : error.message,
-            status : 'fail'
-        })
-      }
-    
-
-
-
-}
-
-module.exports = { addPublisher, deletePublisherById, updatePublisherNameById , getPublisherById , getPublisherByName};
+module.exports = { addPublisher, deletePublisherById, updatePublisherNameById , getPublisherById };

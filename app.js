@@ -39,7 +39,6 @@ app.post('/login' , authController.login );
 app.post('/logout' , authController.logout);
 
 
-
 app.get('*' , (req,res)=>{
     res.send('No Page Found')
 })

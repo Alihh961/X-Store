@@ -1,5 +1,5 @@
 const genreModel = require("../model/genre");
-const checkMongoIdValidation = require('../helpers/functions').checkMongoIdValidation;
+const checkMongoIdValidation = require('../utilities/functions').checkMongoIdValidation;
 
 
 const addGenre = async (req, res) => {
@@ -32,16 +32,17 @@ const addGenre = async (req, res) => {
       status: "success",
     });
   } catch (error) {
+    console.log(error);
     if (error.code === 11000) {
       return res.status(400).json({
         message: "Genre name or genre slug already exists",
         status: "fail",
       });
     }
-    return res.status(400).json({
-      message: error.message,
-      status: "fail",
-    });
+    return res.status(500).json({
+        message : 'Internal error',
+        status :'fail'
+    })
   }
 };
 
@@ -104,10 +105,11 @@ const updateGenreById = async (req, res) => {
       });
     }
 
-    return res.status(400).json({
-      message: error.message,
-      status: "fail",
-    });
+    console.log(error);
+    return res.status(500).json({
+        message : 'Internal error',
+        status :'fail'
+    })
   }
 };
 
@@ -131,9 +133,10 @@ const deleteGenreById = async(req,res)=>{
         })
 
       }catch(error){
-        return res.status(400).json({
-            message : error.message,
-            status : 'fail'
+        console.log(error);
+        return res.status(500).json({
+            message : 'Internal error',
+            status :'fail'
         })
       }
 
@@ -148,19 +151,29 @@ const getGenreById = async (req,res)=>{
       status: "fail",
     });
   }
-  const genre =  await genreModel.findById(id);
 
-  if(!genre){
-    return res.status(404).json({
-      message : "No genre related to the given id: " + genreId ,
-      status : 'fail'
+  try{
+    const genre =  await genreModel.findById(id);
+
+    if(!genre){
+      return res.status(404).json({
+        message : "No genre related to the given id: " + genreId ,
+        status : 'fail'
+      })
+    }
+  
+    return res.status(200).json({
+      data : {genre},
+      status : 'success'
+    })
+  }catch(error){
+    console.log(error);
+    return res.status(500).json({
+        message : 'Internal error',
+        status :'fail'
     })
   }
 
-  return res.status(200).json({
-    data : {genre},
-    status : 'success'
-  })
 
 
 

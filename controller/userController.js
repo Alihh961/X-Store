@@ -1,6 +1,6 @@
 const userModel = require("../model/user");
 const validator = require("validator");
-const checkMongoIdValidation = require('../helpers/functions').checkMongoIdValidation;
+const checkMongoIdValidation = require('../utilities/functions').checkMongoIdValidation;
 
 const addUser = async function (req, res) {
   const name = req.body.name;
@@ -39,12 +39,11 @@ const addUser = async function (req, res) {
       });
     }
 
-    return res.status(400).json({
-      error: {
-        message: err.message,
-      },
-      status: "fail",
-    });
+    console.log(error);
+    return res.status(500).json({
+        message : 'Internal error',
+        status :'fail'
+    })
   }
 };
 
@@ -76,10 +75,11 @@ const getUserById = async function (req, res) {
       status: "success",
     });
   } catch (error) {
+    console.log(error);
     return res.status(500).json({
-      status: "error",
-      message: error.message,
-    });
+        message : 'Internal error',
+        status :'fail'
+    })
   }
 };
 
@@ -113,10 +113,11 @@ const deleteUserById = async function (req, res) {
   } catch (error) {
     console.error(error.message);
 
+    console.log(error);
     return res.status(500).json({
-      message: error.message,
-      status: "error",
-    });
+        message : 'Internal error',
+        status :'fail'
+    })
   }
 };
 
@@ -145,10 +146,11 @@ const getUserByEmail = async function (req, res) {
       status: "success",
     });
   } catch (error) {
+    console.log(error);
     return res.status(500).json({
-      status: "error",
-      message: error.message,
-    });
+        message : 'Internal error',
+        status :'fail'
+    })
   }
 };
 
@@ -179,10 +181,11 @@ const deleteUserByEmail = async function (req, res) {
   } catch (error) {
     console.error(error.message);
 
+    console.log(error);
     return res.status(500).json({
-      message: error.message,
-      status: "error",
-    });
+        message : 'Internal error',
+        status :'fail'
+    })
   }
 };
 
@@ -237,8 +240,11 @@ const updateUserEmailById = async function (req, res) {
         });
     }
 
-    return res.status(400).json({ message: "Error updating user" });
-  }
+    console.log(error);
+    return res.status(500).json({
+        message : 'Internal error',
+        status :'fail'
+    })  }
 };
 
 module.exports = {

@@ -1,7 +1,7 @@
 const languageModel = require("../model/language");
 const fs = require("fs");
 const path = require("path");
-const checkMongoIdValidation = require('../helpers/functions').checkMongoIdValidation;
+const checkMongoIdValidation = require('../utilities/functions').checkMongoIdValidation;
 
 
 const addLanguage = async (req, res) => {
@@ -98,10 +98,19 @@ const addLanguage = async (req, res) => {
       let duplicatedKey = Object.keys(error.keyPattern)[0];
       const capitalizedDuplicatedKey =
         duplicatedKey.charAt(0).toUpperCase() + duplicatedKey.slice(1);
-      return res.status(400).json({
-        message: `${capitalizedDuplicatedKey} language must be unique`,
-        status: "fail",
-      });
+        const genre =  await genreModel.findById(id);
+
+        if(!genre){
+          return res.status(404).json({
+            message : "No genre related to the given id: " + genreId ,
+            status : 'fail'
+          })
+        }
+      
+        return res.status(200).json({
+          data : {genre},
+          status : 'success'
+        })
     }
 
     return res.status(400).json({
@@ -127,10 +136,10 @@ const getLanguageById = async (req, res) => {
     const language = await languageModel.findById(languageId);
 
     if (!language) {
-      throw {
-        message: "No language found for the provided id: " + languageId,
-        status: 404,
-      };
+      return res.status(404).json({
+          message : "No language found for the provided id: " + languageId,
+          status :'fail'
+      })
     }
 
     return res.status(200).json({
@@ -140,10 +149,11 @@ const getLanguageById = async (req, res) => {
       status: "success",
     });
   } catch (error) {
-    return res.status(error.status || 400).json({
-      message: error.message,
-      status: "fail",
-    });
+    console.log(error);
+    return res.status(500).json({
+        message : 'Internal error',
+        status :'fail'
+    })
   }
 };
 
@@ -179,10 +189,11 @@ const deleteLanguageById = async (req, res) => {
       status: "success",
     });
   } catch (error) {
-    return res.status(400).json({
-      message: error.message,
-      status: "fail",
-    });
+    console.log(error);
+    return res.status(500).json({
+        message : 'Internal error',
+        status :'fail'
+    })
   }
 };
 
@@ -277,10 +288,11 @@ const updateLanguageById = async (req, res) => {
       });
     }
 
+    console.log(error);
     return res.status(500).json({
-      message: error.message,
-      status: "fail",
-    });
+        message : 'Internal error',
+        status :'fail'
+    })
   }
 };
 

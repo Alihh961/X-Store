@@ -1,48 +1,34 @@
-const commentModel = require('../model/comment');
-const checkMongoIdValidation = require('../helpers/functions').checkMongoIdValidation;
-const gameModel = require('../model/game');
-const mongoose = require('mongoose');
+const commentModel = require("../model/comment");
+const checkMongoIdValidation =
+  require("../utilities/functions").checkMongoIdValidation;
+const gameModel = require("../model/game");
+const mongoose = require("mongoose");
+const responseHandler = require("../utilities/responseHandler");
 
+const addComment = async (req, res) => {
+  const { gameId, content } = req.body;
 
+  if (checkMongoIdValidation([gameId], "game").error) {
+    return responseHandler.badRequestResponse(res, error.message);
+  }
 
+  if (!content || typeof content !== "string" || content.trim() === "") {
+    return responseHandler.badRequestResponse(
+      res,
+      "Content must be a non-empty string."
+    );
+  }
 
-
-const addComment = async(req, res)=>{
-    const {
-        gameId,
-        content
-    } = req.body;
-
-
-    if(checkMongoIdValidation([gameId] , 'game').error){
-        return res.status(400).json({
-            message : error.message,
-            status :error.status
-        })
-    }
-
-    if (!content || typeof content !== 'string' || content.trim() === '') {
-        return res.status(400).json({
-          message: 'Content must be a non-empty string.',
-          status: 'fail',
-        });
-      }
-
-    try{
-
-   
+  try {
     const game = await gameModel.findById(gameId);
 
-    if(!game){
-        return res.status(404).json({
-            message : `No game founded for the id: ${gameId}`,
-            status :'fail'
-        })
+    if (!game) {
+      return responseHandler.notFoundResponse(res, "game");
     }
 
     const comment = new commentModel({
-        game : new mongoose.Types.ObjectId(gameId),
-        content,
+      game: new mongoose.Types.ObjectId(gameId),
+      content,
     });
 
     await comment.save();
@@ -50,70 +36,86 @@ const addComment = async(req, res)=>{
 
     await game.save();
 
-    return res.status(201).json({
-        message : "Comment created successfully",
-        status : 'success',
-        data : {
-            comment
-        }
-    })
-}catch(error){
-    return res.status(400).json({
-        message : error.message,
-        status : 'fail'
-    })
-}
+    return responseHandler.successResponse(
+      res,
+      201,
+      "Created successfull",
+      comment
+    );
+  } catch (error) {
+    return responseHandler.internalErrorResponse(res, error);
+  }
+};
 
-    
-}
+const deleteCommentById = async (req, res) => {
+  const commentId = req.params.id;
 
+  try {
+    if (checkMongoIdValidation([commentId], "comment").error) {
+      let error = checkMongoIdValidation([commentId], "comment").error;
 
-const deleteCommentById = async(req ,res)=>{
+      return responseHandler.badRequestResponse(res, error.message);
+    }
+    const comment = await commentModel.findById(commentId);
+
+    if (!comment) {
+      return responseHandler.notFoundResponse(res, "comment");
+    }
+
+    const gameId = comment.game;
+
+    const game = await gameModel.findById(gameId);
+
+    game.comments.pull(comment.id);
+
+    await game.save();
+    await commentModel.findByIdAndDelete(comment.id);
+
+    return responseHandler.successResponse(
+      res,
+      200,
+      "Deleted successfully",
+      {}
+    );
+  } catch (error) {
+    return responseHandler.internalErrorResponse(res, error);
+  }
+};
+
+const updateCommentById = async (req, res) => {
+  try {
     const commentId = req.params.id;
+    const content = req.body.content;
 
-    if(checkMongoIdValidation([commentId] , 'comment').error){
-        let error = checkMongoIdValidation([commentId] , 'comment').error;
+    if (checkMongoIdValidation([commentId], "comment").error) {
+      let error = checkMongoIdValidation([commentId], "comment").error;
 
-        return res.status(400).json({
-            message : error.message,
-            status : error.status
-        })
+      return responseHandler.badRequestResponse(res, error.message);
     }
 
-    try{
-        const comment = await commentModel.findById(commentId);
-
-        console.log(comment)
-        if(!comment){
-            return res.status(404).json({
-                message : `No comment found for the id: ${commentId}`,
-                status: 'fail'
-            })
-        }
-    
-        const gameId = comment.game;
-    
-        const game = await gameModel.findById(gameId);
-
-        game.comments.pull(comment.id);
-        
-        await game.save();
-        await commentModel.findByIdAndDelete(comment.id);
-    
-    
-        return res.status(200).json({
-            message : 'Comment deleted successfully',
-            status : 'success'
-        })
-    }catch(error){
-        console.log(error.message)
-        return res.status(500).json({
-            message : 'Internal error',
-            status :'fail'
-        })
+    if (!content || typeof content !== "string" || content.trim() === "") {
+      return responseHandler.badRequestResponse(
+        res,
+        "Content must be a non-empty string."
+      );
     }
 
-}
+    const comment = await commentModel.findById(commentId);
+    if (!comment) {
+        return responseHandler.notFoundResponse(res, "comment");
+      }
 
+     const updatedComment = await commentModel.findByIdAndUpdate( 
+        commentId,
+        {content},
+        {new :true}
+      )
 
-module.exports = { addComment , deleteCommentById }
+      return responseHandler.successResponse(res , 200 , "Updated successfully" , updatedComment);
+
+  } catch (error) {
+    return responseHandler.internalErrorResponse(res, error);
+  }
+};
+
+module.exports = { addComment, deleteCommentById , updateCommentById };
