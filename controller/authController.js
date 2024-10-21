@@ -1,50 +1,43 @@
 const express = require("express");
 const jwt = require("jsonwebtoken");
 const userModel = require("../model/user");
+const responseHandler = require('../utilities/responseHandler');
 
 const maxAge = 30 * 24 * 60 * 60;
 
 const signup = async (req, res, next) => {
-  const name = req.body.name;
-  const email = req.body.email;
-  const password = req.body.password;
-  const confirmedPassword = req.body.confirmedPassword;
-  const credit = 50;
 
   try {
+
+    const name = req.body.name;
+    const email = req.body.email;
+    const password = req.body.password;
+    const confirmedPassword = req.body.confirmedPassword;
+    const credit = 50;
     const emailExists = await userModel.findOne({ email });
     const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_])[A-Za-z\d\W_]{8,}$/;
 
-    if (!email) {
-        throw {
-          message: `Email is required`,
-        }
-    }
-
     if (!name) {
-        throw {
-          message: `Name is required`,
-        }
+      return responseHandler.badRequestResponse(res,"Name is required" )
     }
-    if(!password || !confirmedPassword){
-        throw {
-            message: `Both password and confirmed password are required`,
-          };
+    if (!email) {
+      return responseHandler.badRequestResponse(res,"Email is required" )
     }
-    if (emailExists) {
-      throw {
-        message: `An account with the email address '${email}' already exists. Please use a different email or try logging in.`,
-      };
-    }
-    if (password !== confirmedPassword) {
-      throw {
-        status: "fail",
-        message: `Password and confirmed password must be equal`,
-      };
-    }
-    if(!passwordRegex.test(password)){
-      throw { message: "Password must contain at least one uppercase letter, one lowercase letter, and be at least 8 characters long." };
 
+    if(!password || !confirmedPassword){
+      return responseHandler.badRequestResponse(res,"Both password and confirmed password are required" )
+    }
+
+    if (emailExists) {
+      return responseHandler.badRequestResponse(res,`An account with the email address '${email}' already exists. Please use a different email or try logging in.` )
+    }
+
+    if (password !== confirmedPassword) {
+      return responseHandler.badRequestResponse(res,"Password and confirmed password must be equal" )
+    }
+    
+    if(!passwordRegex.test(password)){
+      return responseHandler.badRequestResponse(res,"Invalid password format" )
     }
 
     const user = new userModel({
@@ -59,21 +52,9 @@ const signup = async (req, res, next) => {
     user.password = undefined;
     const token = signToken(user._id,name);
 
-
-
-    res.status(201).json({
-      message: "User added successfully",
-      data: {
-        user,
-        token
-      },
-      status: 201,
-    });
+return responseHandler.successResponse(res , 201 , "User added successfully" , {user ,token})
   } catch (error) {
-    return res.status(400).json({
-      message: error.message,
-      status: "fail",
-    });
+    return responseHandler.internalErrorResponse(res , error);
   }
 };
 
@@ -85,14 +66,11 @@ const login = async (req, res) => {
     var user = await userModel.findOne({ email }).select("+password");
 
     if (!email || !password) {
-      throw {
-        message: "Please provide an email and password!",
-        statusCode: 400,
-      };
+return responseHandler.badRequestResponse(res ,'Email and Password are required')
     }
 
     if (!user || !(await user.comparingPasswordInDB(password, user.password))) {
-      throw { message: "Invalid credentials", statusCode: 401 };
+      return responseHandler.badRequestResponse(res , 'Invalid credentials')
     }
 
     // to deselect the password
@@ -103,16 +81,14 @@ const login = async (req, res) => {
     // httpOnly (true) means that the user can't access the cookie from the browser like the console
     res.cookie("jwt", token, { httpOnly: false, maxAge: maxAge * 1000 }); // * 1000 because in the cookie it is treated in milliseconds
 
-    return res.status(200).json({
-      status: "success",
-      statusCode: 200,
-        data :{
-            user,
-            token
-        }
-    });
+    return responseHandler.successResponse(
+      res,
+       201 ,
+        "User created successfully" ,
+         {user, token})
   } catch (error) {
-    return res.json({ message: error.message, statusCode: error.statusCode });
+    
+    return responseHandler.internalErrorResponse(res, error.message);
   }
 };
 

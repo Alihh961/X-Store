@@ -6,20 +6,34 @@ const mongoose = require("mongoose");
 const responseHandler = require("../utilities/responseHandler");
 
 const addComment = async (req, res) => {
-  const { gameId, content } = req.body;
-
-  if (checkMongoIdValidation([gameId], "game").error) {
-    return responseHandler.badRequestResponse(res, error.message);
-  }
-
-  if (!content || typeof content !== "string" || content.trim() === "") {
-    return responseHandler.badRequestResponse(
-      res,
-      "Content must be a non-empty string."
-    );
-  }
-
   try {
+    const { gameId, content, upVote, downVote } = req.body;
+
+    if (upVote && downVote) {
+      return responseHandler.badRequestResponse(
+        res,
+        "You can't vote both up and down at the same time."
+      );
+    }
+
+    if(!upVote && !downVote){
+        return responseHandler.badRequestResponse(
+            res,
+            "You must evalute the game"
+          );
+    }
+
+    if (checkMongoIdValidation([gameId], "game").error) {
+      return responseHandler.badRequestResponse(res, error.message);
+    }
+
+    if (!content || typeof content !== "string" || content.trim() === "") {
+      return responseHandler.badRequestResponse(
+        res,
+        "Content must be a non-empty string."
+      );
+    }
+
     const game = await gameModel.findById(gameId);
 
     if (!game) {
@@ -32,6 +46,13 @@ const addComment = async (req, res) => {
     });
 
     await comment.save();
+
+    if(upVote){
+        game.totalUpVotes = game.totalUpVotes + 1;
+    }else if(downVote){
+        game.totalDownVotes = game.totalDownVotes + 1;
+    }
+
     game.comments.push(comment._id);
 
     await game.save();
@@ -40,7 +61,7 @@ const addComment = async (req, res) => {
       res,
       201,
       "Created successfull",
-      comment
+      {comment,game}
     );
   } catch (error) {
     return responseHandler.internalErrorResponse(res, error);
@@ -48,9 +69,9 @@ const addComment = async (req, res) => {
 };
 
 const deleteCommentById = async (req, res) => {
-  const commentId = req.params.id;
-
-  try {
+    
+    try {
+      const commentId = req.params.id;
     if (checkMongoIdValidation([commentId], "comment").error) {
       let error = checkMongoIdValidation([commentId], "comment").error;
 
@@ -102,20 +123,50 @@ const updateCommentById = async (req, res) => {
 
     const comment = await commentModel.findById(commentId);
     if (!comment) {
-        return responseHandler.notFoundResponse(res, "comment");
-      }
+      return responseHandler.notFoundResponse(res, "comment");
+    }
 
-     const updatedComment = await commentModel.findByIdAndUpdate( 
-        commentId,
-        {content},
-        {new :true}
-      )
+    const updatedComment = await commentModel.findByIdAndUpdate(
+      commentId,
+      { content },
+      { new: true }
+    );
 
-      return responseHandler.successResponse(res , 200 , "Updated successfully" , updatedComment);
-
+    return responseHandler.successResponse(
+      res,
+      200,
+      "Updated successfully",
+      updatedComment
+    );
   } catch (error) {
     return responseHandler.internalErrorResponse(res, error);
   }
 };
 
-module.exports = { addComment, deleteCommentById , updateCommentById };
+const getCommentById = async (req, res) => {
+  try {
+    const commentId = req.params.id;
+
+    if (checkMongoIdValidation([commentId], "comment").error) {
+      let error = checkMongoIdValidation([commentId], "comment").error;
+
+      return responseHandler.badRequestResponse(res, error.message);
+    }
+
+    const comment = await commentModel.findById(commentId);
+    if (!comment) {
+      return responseHandler.notFoundResponse(res, "comment");
+    }
+
+    return responseHandler.successResponse(res, 200, "Success", comment);
+  } catch (error) {
+    return responseHandler.internalErrorResponse(res, error);
+  }
+};
+
+module.exports = {
+  addComment,
+  deleteCommentById,
+  updateCommentById,
+  getCommentById,
+};
