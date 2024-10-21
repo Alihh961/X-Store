@@ -1,43 +1,51 @@
 const express = require("express");
 const jwt = require("jsonwebtoken");
 const userModel = require("../model/user");
-const responseHandler = require('../utilities/responseHandler');
+const responseHandler = require("../utilities/responseHandler");
 
 const maxAge = 30 * 24 * 60 * 60;
 
 const signup = async (req, res, next) => {
-
   try {
-
     const name = req.body.name;
     const email = req.body.email;
     const password = req.body.password;
     const confirmedPassword = req.body.confirmedPassword;
     const credit = 50;
     const emailExists = await userModel.findOne({ email });
-    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_])[A-Za-z\d\W_]{8,}$/;
+    const passwordRegex =
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_])[A-Za-z\d\W_]{8,}$/;
 
     if (!name) {
-      return responseHandler.badRequestResponse(res,"Name is required" )
+      return responseHandler.badRequestResponse(res, "Name is required");
     }
     if (!email) {
-      return responseHandler.badRequestResponse(res,"Email is required" )
+      return responseHandler.badRequestResponse(res, "Email is required");
     }
 
-    if(!password || !confirmedPassword){
-      return responseHandler.badRequestResponse(res,"Both password and confirmed password are required" )
+    if (!password || !confirmedPassword) {
+      return responseHandler.badRequestResponse(
+        res,
+        "Both password and confirmed password are required"
+      );
     }
 
     if (emailExists) {
-      return responseHandler.badRequestResponse(res,`An account with the email address '${email}' already exists. Please use a different email or try logging in.` )
+      return responseHandler.badRequestResponse(
+        res,
+        `An account with the email address '${email}' already exists. Please use a different email or try logging in.`
+      );
     }
 
     if (password !== confirmedPassword) {
-      return responseHandler.badRequestResponse(res,"Password and confirmed password must be equal" )
+      return responseHandler.badRequestResponse(
+        res,
+        "Password and confirmed password must be equal"
+      );
     }
-    
-    if(!passwordRegex.test(password)){
-      return responseHandler.badRequestResponse(res,"Invalid password format" )
+
+    if (!passwordRegex.test(password)) {
+      return responseHandler.badRequestResponse(res, "Invalid password format");
     }
 
     const user = new userModel({
@@ -45,16 +53,21 @@ const signup = async (req, res, next) => {
       email,
       password,
       confirmedPassword,
-      credit
+      credit,
     });
     await user.save();
 
     user.password = undefined;
-    const token = signToken(user._id,name);
+    const token = signToken(user.id, user.email , user.roles);
 
-return responseHandler.successResponse(res , 201 , "User added successfully" , {user ,token})
+    return responseHandler.successResponse(
+      res,
+      201,
+      "User added successfully",
+      { user, token }
+    );
   } catch (error) {
-    return responseHandler.internalErrorResponse(res , error);
+    return responseHandler.internalErrorResponse(res, error);
   }
 };
 
@@ -66,28 +79,29 @@ const login = async (req, res) => {
     var user = await userModel.findOne({ email }).select("+password");
 
     if (!email || !password) {
-return responseHandler.badRequestResponse(res ,'Email and Password are required')
+      return responseHandler.badRequestResponse(
+        res,
+        "Email and Password are required"
+      );
     }
 
     if (!user || !(await user.comparingPasswordInDB(password, user.password))) {
-      return responseHandler.badRequestResponse(res , 'Invalid credentials')
+      return responseHandler.badRequestResponse(res, "Invalid credentials");
     }
 
     // to deselect the password
     user = await userModel.findOne({ email });
 
-    const token = signToken(user._id, user.userName);
+    const token = signToken(user._id, user.email, user.roles);
 
     // httpOnly (true) means that the user can't access the cookie from the browser like the console
     res.cookie("jwt", token, { httpOnly: false, maxAge: maxAge * 1000 }); // * 1000 because in the cookie it is treated in milliseconds
 
-    return responseHandler.successResponse(
-      res,
-       201 ,
-        "User created successfully" ,
-         {user, token})
+    return responseHandler.successResponse(res, 200, "Success", {
+      user,
+      token,
+    });
   } catch (error) {
-    
     return responseHandler.internalErrorResponse(res, error.message);
   }
 };
@@ -98,12 +112,19 @@ const logout = (req, res) => {
   res.redirect("/");
 };
 
-const signToken = function (id, userName) {
+const signToken = function (id, email, roles) {
+  console.log(roles)
   return jwt.sign(
-    { _id: id, userName } /* payload*/,
-    process.env.APP_SECRET /* secret string */,
     {
-      expiresIn: maxAge /* expire date */,
+      user: {
+        id: id,
+        email,
+        roles,
+      },
+    },
+    /* payload*/ process.env.APP_SECRET,
+    {
+      expiresIn: maxAge,
     }
   );
 };

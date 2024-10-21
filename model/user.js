@@ -52,10 +52,10 @@ const userSchema = new mongoose.Schema(
       type : Date,
       required : false
     },
-    role : {
-      type : String,
+    roles : {
+      type : [String],
       enum : ["User" , "Admin" , "Read-Only"],
-      default : "User"
+      default : ["User" , "Read-Only"]
     }
   },
   {

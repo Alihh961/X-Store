@@ -38,6 +38,10 @@ app.post('/register' , authController.signup);
 app.post('/login' , authController.login );
 app.post('/logout' , authController.logout);
 
+const mid = require('./middleware/authMiddleware');
+app.post('/test' ,mid.checkRole('Read-Only') ,(req,res)=>{
+    return res.json(req.headers.cookie);
+})
 
 app.get('*' , (req,res)=>{
     res.send('No Page Found')

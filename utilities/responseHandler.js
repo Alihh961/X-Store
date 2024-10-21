@@ -5,8 +5,8 @@
  * @param {String} message - The message to be returned within the response.
  * @returns {Object} The JSON response object with status and message.
  */
-const badRequestResponse = (res , message) => {
-  return res.status(400).json({
+const badRequestResponse = (res , message , code = 400) => {
+  return res.status(code).json({
       status: "fail",
       message: message,
   });
