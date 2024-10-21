@@ -1,17 +1,17 @@
 const validator = require("validator");
 const path = require("path");
 const fs = require("fs");
-const languageModel = require("../model/language");
-const responseHandler = require("../utilities/responseHandler");
+const languageModel = require("../../model/language");
+const responseHandler = require("../../utilities/responseHandler");
 
-const userModel = require("../model/game");
-const gameModel = require("../model/game");
-const publisherModel = require("../model/publisher");
-const genreModel = require("../model/genre");
-const commentModel = require("../model/comment");
+const userModel = require("../../model/game");
+const gameModel = require("../../model/game");
+const publisherModel = require("../../model/publisher");
+const genreModel = require("../../model/genre");
+const commentModel = require("../../model/comment");
 
 const checkMongoIdValidation =
-  require("../utilities/functions").checkMongoIdValidation;
+  require("../../utilities/functions").checkMongoIdValidation;
 
 const getGameById = async (req, res) => {
   try {

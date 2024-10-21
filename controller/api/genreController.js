@@ -1,5 +1,5 @@
-const genreModel = require("../model/genre");
-const checkMongoIdValidation = require('../utilities/functions').checkMongoIdValidation;
+const genreModel = require("../../model/genre");
+const checkMongoIdValidation = require('../../utilities/functions').checkMongoIdValidation;
 
 
 const addGenre = async (req, res) => {

@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const gameController = require("../controller/gameController");
+const gameController = require("../controller/api/gameController");
 const uploadGameImagesService = require('../service/uploadGameImagesService');
 
 

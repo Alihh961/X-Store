@@ -42,6 +42,11 @@ const commentSchema = new mongoose.Schema({
     type : mongoose.Types.ObjectId,
     ref : 'game',
     required :true
+  },
+  user: {
+    type : mongoose.Types.ObjectId,
+    ref : 'User',
+    required :true
   }
 });
 

@@ -1,7 +1,7 @@
-const languageModel = require("../model/language");
+const languageModel = require("../../model/language");
 const fs = require("fs");
 const path = require("path");
-const checkMongoIdValidation = require('../utilities/functions').checkMongoIdValidation;
+const checkMongoIdValidation = require('../../utilities/functions').checkMongoIdValidation;
 
 
 const addLanguage = async (req, res) => {

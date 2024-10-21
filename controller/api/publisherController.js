@@ -1,7 +1,7 @@
 const { response } = require("express");
-const publisherModel = require("../model/publisher");
-const checkMongoIdValidation = require('../utilities/functions').checkMongoIdValidation;
-const responseHandler =  require('../utilities/responseHandler')
+const publisherModel = require("../../model/publisher");
+const checkMongoIdValidation = require('../../utilities/functions').checkMongoIdValidation;
+const responseHandler =  require('../../utilities/responseHandler')
 
 
 const addPublisher = async function (req, res) {

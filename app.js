@@ -2,15 +2,13 @@ const express = require('express');
 const path = require('path');
 const app = express();
 
-const userRouter = require('./router/userRouter');
-const gameRouter = require('./router/gameRouter');
-const publisherRouter = require('./router/publisherRouter');
-const genreRouter = require('./router/genreRouter');
-const languageRouter = require('./router/languageRouter');
-const commentRouter = require('./router/commentRouter');
+
+const apiRouter = require('./router/apiRouter');
 
 
 const authController = require('./controller/authController');
+
+const authMiddleware = require('./middleware/authMiddleware');
 
 const publicPath = path.join(__dirname , './public');
 
@@ -27,23 +25,18 @@ app.get('/' , (req,res)=>{
     res.send('Home Page')
 });
 
-app.use('/user' , userRouter);
-app.use('/game' , gameRouter);
-app.use('/publisher' , publisherRouter);
-app.use('/genre' , genreRouter);
-app.use('/language' , languageRouter);
-app.use('/comment' , commentRouter );
+app.use('/api' , apiRouter);
 
 app.post('/register' , authController.signup);
 app.post('/login' , authController.login );
 app.post('/logout' , authController.logout);
 
 const mid = require('./middleware/authMiddleware');
-app.post('/test' ,mid.checkRole('Read-Only') ,(req,res)=>{
+app.post('/test',(req,res)=>{
     return res.json(req.headers.cookie);
 })
 
-app.get('*' , (req,res)=>{
+app.all('*' , (req,res)=>{
     res.send('No Page Found')
 })
 

@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const genreController = require('../controller/genreController')
+const genreController = require('../controller/api/genreController')
 
 router.post('/' , genreController.addGenre);
 router.patch('/:id' , genreController.updateGenreById);

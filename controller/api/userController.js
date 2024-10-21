@@ -1,6 +1,6 @@
-const userModel = require("../model/user");
+const userModel = require("../../model/user");
 const validator = require("validator");
-const checkMongoIdValidation = require('../utilities/functions').checkMongoIdValidation;
+const checkMongoIdValidation = require('../../utilities/functions').checkMongoIdValidation;
 
 const addUser = async function (req, res) {
   const name = req.body.name;

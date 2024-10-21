@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const publisherController = require('../controller/publisherController');
+const publisherController = require('../controller/api/publisherController');
 
 
 

@@ -1,9 +1,9 @@
-const commentModel = require("../model/comment");
+const commentModel = require("../../model/comment");
 const checkMongoIdValidation =
-  require("../utilities/functions").checkMongoIdValidation;
-const gameModel = require("../model/game");
+  require("../../utilities/functions").checkMongoIdValidation;
+const gameModel = require("../../model/game");
 const mongoose = require("mongoose");
-const responseHandler = require("../utilities/responseHandler");
+const responseHandler = require("../../utilities/responseHandler");
 
 const addComment = async (req, res) => {
   try {

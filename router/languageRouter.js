@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const languageController = require('../controller/languageController');
+const languageController = require('../controller/api/languageController');
 const uploadFlagImageService = require('../service/uploadFlagImageService');
 
 router.post('/' , uploadFlagImageService , languageController.addLanguage);
