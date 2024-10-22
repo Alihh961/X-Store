@@ -3,8 +3,10 @@ const jwt = require("jsonwebtoken");
 const userModel = require("../model/user");
 const responseHandler = require("../utilities/responseHandler");
 
-const maxAge = 30 * 24 * 60 * 60;
 
+//check this controller
+
+const maxAge = 365 * 24 * 60 * 60 ;
 const signup = async (req, res, next) => {
   try {
     const name = req.body.name;
@@ -58,7 +60,13 @@ const signup = async (req, res, next) => {
     await user.save();
 
     user.password = undefined;
-    const token = signToken(user.id, user.email , user.roles);
+    const token = signToken(user.id , maxAge);
+
+    res.cookie('token', token, {
+      httpOnly: true, 
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: 365 * 24 * 60 * 60 * 1000 //it should be in milliseconds since maxAge in res.cookie() expects the value in milliseconds
+    });
 
     return responseHandler.successResponse(
       res,
@@ -92,10 +100,9 @@ const login = async (req, res) => {
     // to deselect the password
     user = await userModel.findOne({ email });
 
-    const token = signToken(user._id, user.email, user.roles);
+    const token = signToken(user.id , maxAge);
 
-    // httpOnly (true) means that the user can't access the cookie from the browser like the console
-    res.cookie("jwt", token, { httpOnly: false, maxAge: maxAge * 1000 }); // * 1000 because in the cookie it is treated in milliseconds
+    res.cookie("token", token, { httpOnly: false, maxAge: maxAge * 1000 }); // * 1000 because in the cookie it is treated in milliseconds
 
     return responseHandler.successResponse(res, 200, "Success", {
       user,
@@ -107,20 +114,15 @@ const login = async (req, res) => {
 };
 
 const logout = (req, res) => {
-  res.cookie("jwt", "", { maxAge: 1 });
+  res.cookie("token", "", { maxAge: 1 });
 
   res.redirect("/");
 };
 
-const signToken = function (id, email, roles) {
-  console.log(roles)
+const signToken = function (userId,  maxAge = '1h') {
   return jwt.sign(
     {
-      user: {
-        id: id,
-        email,
-        roles,
-      },
+      userId,
     },
     /* payload*/ process.env.APP_SECRET,
     {
@@ -128,5 +130,7 @@ const signToken = function (id, email, roles) {
     }
   );
 };
+
+
 
 module.exports = { signup, login, logout };

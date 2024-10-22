@@ -16,7 +16,7 @@ router.use('/game' , authMiddleware.requiredAdminForCrud , gameRouter);
 router.use('/publisher', authMiddleware.requiredAdminForCrud , publisherRouter );
 router.use('/genre' , authMiddleware.requiredAdminForCrud , genreRouter);
 router.use('/language' , authMiddleware.requiredAdminForCrud , languageRouter);
-router.use('/comment' , authMiddleware.requiredAdminForCrud , commentRouter );
+router.use('/comment' ,  authMiddleware.requiredAdminForCrud ,commentRouter );
 
 
 module.exports =  router ;

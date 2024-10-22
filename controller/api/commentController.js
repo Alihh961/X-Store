@@ -4,10 +4,11 @@ const checkMongoIdValidation =
 const gameModel = require("../../model/game");
 const mongoose = require("mongoose");
 const responseHandler = require("../../utilities/responseHandler");
+const userModel = require("../../model/user");
 
 const addComment = async (req, res) => {
   try {
-    const { gameId, content, upVote, downVote } = req.body;
+    const { gameId, content, upVote, downVote , userId } = req.body;
 
     if (upVote && downVote) {
       return responseHandler.badRequestResponse(
@@ -40,9 +41,16 @@ const addComment = async (req, res) => {
       return responseHandler.notFoundResponse(res, "game");
     }
 
+    const user = await userModel.findById(userId);
+    if(!user){
+      return responseHandler.notFoundResponse(res, "user");
+
+    }
+
     const comment = new commentModel({
       game: new mongoose.Types.ObjectId(gameId),
       content,
+      user : userId
     });
 
     await comment.save();

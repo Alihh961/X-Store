@@ -1,8 +1,9 @@
+const userModel = require("../model/user");
 const responseHandler = require("../utilities/responseHandler");
 const jwt = require("jsonwebtoken");
 
 //check if the user is a superAdmin
-const requiredRole = (requiredRole) => {
+const requiredRole = async (requiredRole) => {
   return async (req, res, next) => {
     try {
       const authHeader = req.headers["authorization"];
@@ -25,7 +26,19 @@ const requiredRole = (requiredRole) => {
       }
 
       const decoded = jwt.verify(token, process.env.APP_SECRET);
-      const user = decoded.user;
+      const userId = decoded.userId;
+
+      const user = await userModel.findById(userId);
+      if(!user){
+
+        res.clearCookie('token', {
+          httpOnly: true,  
+          secure: process.env.NODE_ENV === 'production',
+        });
+
+        return responseHandler.badRequestResponse(res, "Something went wrong", 400);
+
+      }
 
       if (!user.roles || !user.roles.includes(requiredRole)) {
         return responseHandler.badRequestResponse(res, "Unauthorized", 403);
@@ -42,7 +55,7 @@ const requiredRole = (requiredRole) => {
   };
 };
 
-const requiredAdminForCrud = (req ,res ,next)=>{
+const requiredAdminForCrud = async (req ,res ,next)=>{
   try{
 
     const {method} = req;
@@ -66,7 +79,20 @@ const requiredAdminForCrud = (req ,res ,next)=>{
     }
 
     const decoded = jwt.verify(token, process.env.APP_SECRET);
-    const user = decoded.user;
+    const userId = decoded.userId;
+
+    const user = await userModel.findById(userId);
+    if(!user){
+
+      res.clearCookie('token', {
+        httpOnly: true,  
+        secure: process.env.NODE_ENV === 'production',
+      });
+
+      return responseHandler.badRequestResponse(res, "Something went wrong", 400);
+
+    }
+
 
     if ((method === 'POST' || method === 'PATCH' || method === 'DELETE') && !user.roles.includes('Admin')) {
       return responseHandler.badRequestResponse(res , 'Forbidden' , 403);
